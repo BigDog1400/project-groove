@@ -7,11 +7,19 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { H1, Muted } from "@/components/ui/typography";
 import { Fab } from "@/components/ui/fab";
+import { useEffect } from "react";
 
 export default function Home() {
 	const { user } = useAuth();
 	const { data: todayExercises, isLoading } = useTodayExercise(user?.id || "");
 	const todayExercise = todayExercises?.[0]; // Get first exercise for now
+
+	// If no exercises and not loading, redirect to onboarding
+	useEffect(() => {
+		if (!isLoading && (!todayExercises || todayExercises.length === 0)) {
+			router.push('/(app)/(protected)/onboarding');
+		}
+	}, [isLoading, todayExercises]);
 
 	return (
 		<SafeAreaView className="flex-1 bg-background">
