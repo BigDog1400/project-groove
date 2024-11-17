@@ -24,6 +24,6 @@
 **Instructions for LLM:**
 
 * Generate the code for `HomeScreen.tsx`.
-* Use `@supabase/supabase-js` to fetch user-specific exercise data.
+* Use `@supabase/supabase-js` to fetch user-specific exercise data in combination with tanstack/react-query.
 * Design a clear and visually appealing UI to display exercises.
 * The "Log Set" button can initially be a placeholder, but should be clearly identifiable.
