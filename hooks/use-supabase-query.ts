@@ -87,3 +87,34 @@ export function useCompleteDailyExercise(userId: string) {
     },
   });
 }
+
+export function useLogSet() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ 
+      user_exercise_id, 
+      reps, 
+      daily_assignment_id 
+    }: { 
+      user_exercise_id: string; 
+      reps: number;
+      daily_assignment_id: string;
+    }) => {
+      // Insert the set
+      const { error: setError } = await supabase
+        .from("sets")
+        .insert({
+          user_exercise_id,
+          reps,
+          daily_assignment_id,
+          timestamp: new Date().toISOString(),
+        });
+      
+      if (setError) throw setError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["today-exercise"] });
+    },
+  });
+}

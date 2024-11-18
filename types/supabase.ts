@@ -1,5 +1,3 @@
-yarn run v1.22.22
-$ /Users/isaac/Documents/personal-projects/project-groove/node_modules/.bin/supabase gen types typescript --project-id mybvdyxuulmuojnwomhk --schema public
 export type Json =
   | string
   | number
@@ -13,7 +11,6 @@ export type Database = {
     Tables: {
       daily_exercise_assignments: {
         Row: {
-          completed: boolean | null
           created_at: string
           date: string
           id: string
@@ -21,7 +18,6 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
-          completed?: boolean | null
           created_at?: string
           date?: string
           id?: string
@@ -29,7 +25,6 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
-          completed?: boolean | null
           created_at?: string
           date?: string
           id?: string
@@ -66,24 +61,34 @@ export type Database = {
       }
       sets: {
         Row: {
+          daily_assignment_id: string | null
           id: string
           reps: number
           timestamp: string
           user_exercise_id: string
         }
         Insert: {
+          daily_assignment_id?: string | null
           id?: string
           reps: number
           timestamp?: string
           user_exercise_id: string
         }
         Update: {
+          daily_assignment_id?: string | null
           id?: string
           reps?: number
           timestamp?: string
           user_exercise_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "sets_daily_assignment_id_fkey"
+            columns: ["daily_assignment_id"]
+            isOneToOne: false
+            referencedRelation: "daily_exercise_assignments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "sets_user_exercise_id_fkey"
             columns: ["user_exercise_id"]
@@ -166,11 +171,19 @@ export type Database = {
           p_user_id: string
         }
         Returns: {
+          daily_assignment_id: string
+          user_exercise_id: string
           exercise_id: string
           exercise_name: string
           target_reps: number
-          completed: boolean
+          sets_count: number
         }[]
+      }
+      get_todays_sets_count: {
+        Args: {
+          p_daily_assignment_id: string
+        }
+        Returns: number
       }
     }
     Enums: {
@@ -278,4 +291,3 @@ export type CompositeTypes<
   : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
     ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
-Done in 3.43s.

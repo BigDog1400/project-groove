@@ -60,7 +60,7 @@ export default function ExerciseSelectionScreen() {
         }))
       );
 
-      router.push('/(app)/(protected)/');
+      router.push('/(app)/(protected)');
     } catch (error) {
       console.error('Error saving exercises:', error);
     }
@@ -75,7 +75,7 @@ export default function ExerciseSelectionScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['bottom']}>
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16 }}>
         <Text className="text-2xl font-bold mb-4">Select Your Exercises</Text>
         <Text className="mb-4">Choose up to 3 exercises and set your target reps for each.</Text>
@@ -127,7 +127,6 @@ export default function ExerciseSelectionScreen() {
         </View>
       </ScrollView>
 
-      <SafeAreaView edges={['bottom']} className="bg-background border-t border-border">
         <View className="p-4">
           <Button
             disabled={selectedExercises.length === 0}
@@ -137,7 +136,6 @@ export default function ExerciseSelectionScreen() {
             <Text>Save Exercises</Text>
           </Button>
         </View>
-      </SafeAreaView>
     </SafeAreaView>
   );
 }
