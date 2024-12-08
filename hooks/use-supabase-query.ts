@@ -55,10 +55,19 @@ export function useSaveUserExercises() {
       
       if (deactivateError) throw deactivateError;
 
-      // Then insert new exercises as active
+      // Then upsert new exercises with ON CONFLICT DO UPDATE
       const { error } = await supabase
         .from("user_exercises")
-        .upsert(exercises.map(e => ({ ...e, active: true })));
+        .upsert(
+          exercises.map(e => ({ 
+            ...e, 
+            active: true 
+          })), 
+          { 
+            onConflict: 'user_id,exercise_id',
+            ignoreDuplicates: false 
+          }
+        );
       
       if (error) throw error;
     },

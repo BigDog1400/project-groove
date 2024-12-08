@@ -1,10 +1,11 @@
 import { View, ScrollView } from 'react-native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/config/supabase';
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { Input } from '@/components/ui/input';
-import { useExercises, useSaveUserExercises } from '@/hooks/use-supabase-query';
+import { useAuth } from '@/hooks/use-auth';
+import { useExercises, useSaveUserExercises, useUserExercises } from '@/hooks/use-supabase-query';
 
 interface Exercise {
   id: string;
@@ -23,9 +24,25 @@ interface ExerciseSelectionFormProps {
 }
 
 export function ExerciseSelectionForm({ onSaved, showTitle = true }: ExerciseSelectionFormProps) {
+  const { user } = useAuth();
   const [selectedExercises, setSelectedExercises] = useState<UserExercise[]>([]);
-  const { data: exercises = [], isLoading } = useExercises();
+  const { data: exercises = [], isLoading: isLoadingExercises } = useExercises();
+  const { data: userExercises = [], isLoading: isLoadingUserExercises } = useUserExercises(user?.id || "");
   const { mutateAsync: saveExercises } = useSaveUserExercises();
+
+  console.debug('Selected exercises:', selectedExercises);
+  // Initialize selected exercises from user's active exercises
+  useEffect(() => {
+    console.debug('Selected exercises from user:', userExercises);
+    if (userExercises.length > 0) {
+      setSelectedExercises(
+        userExercises.map(ue => ({
+          exercise_id: ue.exercise_id,
+          target_reps: ue.target_reps
+        }))
+      );
+    }
+  }, [userExercises]);
 
   const toggleExercise = (exercise: Exercise) => {
     setSelectedExercises((prev) => {
@@ -36,7 +53,12 @@ export function ExerciseSelectionForm({ onSaved, showTitle = true }: ExerciseSel
       if (prev.length >= 3) {
         return prev;
       }
-      return [...prev, { exercise_id: exercise.id, target_reps: 0 }];
+      // Get existing target reps if this exercise was previously selected
+      const existingExercise = userExercises.find(ue => ue.exercise_id === exercise.id);
+      return [...prev, { 
+        exercise_id: exercise.id, 
+        target_reps: existingExercise?.target_reps || 0 
+      }];
     });
   };
 
@@ -51,78 +73,71 @@ export function ExerciseSelectionForm({ onSaved, showTitle = true }: ExerciseSel
   };
 
   const handleSave = async () => {
+    if (!user?.id) return;
+    
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No user found');
-
       await saveExercises(
-        selectedExercises.map((e) => ({
-          user_id: user.id,
-          exercise_id: e.exercise_id,
-          target_reps: e.target_reps,
+        selectedExercises.map(e => ({
+          ...e,
+          user_id: user.id
         }))
       );
-
       onSaved?.();
     } catch (error) {
       console.error('Error saving exercises:', error);
     }
   };
 
-  if (isLoading) {
+  if (isLoadingExercises || isLoadingUserExercises) {
     return (
-      <View className="flex-1 items-center justify-center">
+      <View className="items-center justify-center p-4">
         <Text>Loading exercises...</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1" contentContainerStyle={{ padding: 16 }}>
+    <View className="flex-1">
       {showTitle && (
-        <>
-          <Text className="text-2xl font-bold mb-4">Select Your Exercises</Text>
-          <Text className="mb-4">Choose up to 3 exercises and set your target reps for each.</Text>
-        </>
+        <Text className="text-xl font-bold mb-4 px-4">Select Your Exercises</Text>
       )}
-
-      <View className="mb-6">
+      <ScrollView className="flex-1 px-4">
         {exercises.map((exercise) => {
           const isSelected = selectedExercises.some(
             (e) => e.exercise_id === exercise.id
           );
-          const selectedExercise = selectedExercises.find(
+          const userExercise = selectedExercises.find(
             (e) => e.exercise_id === exercise.id
           );
 
           return (
             <View
               key={exercise.id}
-              className={`p-4 mb-2 rounded-lg border ${
-                isSelected ? 'border-blue-500' : 'border-gray-300'
+              className={`p-4 mb-4 rounded-lg border ${
+                isSelected ? 'bg-primary/10 border-primary' : 'border-border'
               }`}
             >
-              <View className="flex-row justify-between items-center">
-                <View className="flex-1">
-                  <Text className="font-semibold">{exercise.name}</Text>
-                  <Text className="text-gray-500 text-sm mt-1">
-                    {exercise.description}
-                  </Text>
-                </View>
+              <View className="flex-row items-center justify-between">
+                <Text className="font-medium flex-1">{exercise.name}</Text>
                 <Button
-                  variant={isSelected ? 'default' : 'outline'}
+                  variant={isSelected ? "secondary" : "outline"}
                   onPress={() => toggleExercise(exercise)}
                 >
                   <Text>{isSelected ? 'Selected' : 'Select'}</Text>
                 </Button>
               </View>
+
               {isSelected && (
                 <View className="mt-4">
-                  <Text className="mb-2">Target reps per set:</Text>
+                  <Text className="text-sm text-muted-foreground mb-2">
+                    Target reps per set
+                  </Text>
                   <Input
                     keyboardType="numeric"
-                    value={selectedExercise?.target_reps.toString()}
-                    onChangeText={(value) => updateTargetReps(exercise.id, value)}
+                    value={userExercise?.target_reps.toString()}
+                    onChangeText={(value) =>
+                      updateTargetReps(exercise.id, value)
+                    }
                     placeholder="Enter target reps"
                   />
                 </View>
@@ -130,15 +145,17 @@ export function ExerciseSelectionForm({ onSaved, showTitle = true }: ExerciseSel
             </View>
           );
         })}
-      </View>
+      </ScrollView>
 
-      <Button
-        className="mb-4"
-        disabled={selectedExercises.length === 0}
-        onPress={handleSave}
-      >
-        <Text>Save Exercises</Text>
-      </Button>
-    </ScrollView>
+      <View className="p-4">
+        <Button
+          className="w-full"
+          disabled={selectedExercises.length === 0}
+          onPress={handleSave}
+        >
+          <Text>Save Exercises</Text>
+        </Button>
+      </View>
+    </View>
   );
 }
