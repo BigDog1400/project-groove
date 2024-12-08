@@ -58,6 +58,15 @@ export default function ProtectedLayout() {
 				}}
 			/>
 			<Tabs.Screen 
+				name="progress" 
+				options={{
+					title: "Progress",
+					tabBarIcon: ({ color }) => (
+						<Ionicons name="stats-chart-outline" size={24} color={color} />
+					),
+				}}
+			/>
+			<Tabs.Screen 
 				name="settings" 
 				options={{
 					href: null, // Hide from tab bar but keep accessible
