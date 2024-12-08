@@ -5,15 +5,17 @@ import { useTodayExercise, useLogSet } from "@/hooks/use-supabase-query";
 
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-import { H1, Muted } from "@/components/ui/typography";
+import { H1, H3, Muted } from "@/components/ui/typography";
 import { Fab } from "@/components/ui/fab";
 import { StreakFlame } from "@/components/ui/streak-flame";
 import { useEffect } from "react";
 
+const RECOMMENDED_DAILY_SETS = 6;
+
 export default function Home() {
 	const { user } = useAuth();
 	const { data: todayExercises, isLoading } = useTodayExercise(user?.id || "");
-	const todayExercise = todayExercises?.[0]; // Get first exercise for now
+	const todayExercise = todayExercises?.[0];
 	const logSet = useLogSet();
 
 	// If no exercises and not loading, redirect to onboarding
@@ -42,11 +44,18 @@ export default function Home() {
 		}
 	};
 
+	const getProgressMessage = (setsCount: number) => {
+		if (setsCount === 0) return "Start your first set!";
+		if (setsCount < RECOMMENDED_DAILY_SETS) return `${RECOMMENDED_DAILY_SETS - setsCount} more sets recommended today`;
+		return "Daily goal achieved! 🎉";
+	};
+
 	return (
 		<SafeAreaView className="flex-1 bg-background">
 			<View className="flex-1 justify-center px-4">
 				<View className="items-center">
-					<H1 className="mb-8">Today's Focus</H1>
+					<H1 className="mb-2">Today's Practice</H1>
+					<Muted className="mb-8 text-center">Practice frequently throughout the day for best results</Muted>
 					
 					{isLoading ? (
 						<Muted>Loading your exercise...</Muted>
@@ -62,19 +71,35 @@ export default function Home() {
 					) : (
 						<View className="w-full items-center">
 							{/* Exercise Card */}
-							<View className="bg-card w-full rounded-2xl p-6 items-center">
-								<Text className="text-2xl font-bold text-center mb-2">
-									{todayExercise.exercise_name}
-								</Text>
-								<Text className="text-base text-muted-foreground mb-6">
-									{todayExercise.target_reps} reps per set
-								</Text>
+							<View className="bg-card w-full rounded-2xl p-6">
+								<View className="items-center mb-6">
+									<Text className="text-2xl font-bold text-center mb-2">
+										{todayExercise.exercise_name}
+									</Text>
+									<Text className="text-base text-muted-foreground">
+										Target: {todayExercise.target_reps} reps this set
+									</Text>
+								</View>
 								
-								{/* Streak Section */}
-								<StreakFlame 
-									count={todayExercise.sets_count} 
-									className="mb-6"
-								/>
+								{/* Progress Section */}
+								<View className="items-center mb-6">
+									<H3 className="mb-2">Today's Progress</H3>
+									<StreakFlame 
+										count={todayExercise.sets_count} 
+										className="mb-2"
+									/>
+									<Text className="text-base text-center text-muted-foreground">
+										{getProgressMessage(todayExercise.sets_count)}
+									</Text>
+									<View className="w-full bg-muted h-2 rounded-full mt-4">
+										<View 
+											className="bg-primary h-full rounded-full" 
+											style={{ 
+												width: `${Math.min((todayExercise.sets_count / RECOMMENDED_DAILY_SETS) * 100, 100)}%` 
+											}} 
+										/>
+									</View>
+								</View>
 								
 								{/* Log Set Button */}
 								<Button 
@@ -86,16 +111,24 @@ export default function Home() {
 									<Text className="text-lg">
 										{logSet.isPending 
 											? 'Logging...' 
-											: 'Log Set'
+											: `Complete Set of ${todayExercise.target_reps} ${todayExercise.exercise_name}`
 										}
 									</Text>
 								</Button>
+
+								{todayExercise.sets_count > 0 && (
+									<Muted className="text-center mt-4">
+										Last set completed: {new Date().toLocaleTimeString()}
+									</Muted>
+								)}
 							</View>
 
-							{/* Motivational Text */}
-							<Muted className="mt-6 text-center px-6">
-								Remember: Frequent practice throughout the day is key to mastery.
-							</Muted>
+							{/* Methodology Explanation */}
+							<View className="mt-6 p-4 bg-muted rounded-lg">
+								<Text className="text-sm text-center">
+									💡 Grease the Groove: Practice frequently throughout the day with perfect form, staying fresh and never reaching fatigue.
+								</Text>
+							</View>
 						</View>
 					)}
 				</View>
