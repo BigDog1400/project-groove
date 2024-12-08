@@ -25,9 +25,9 @@ const { user } = useAuth();
   const { data: metrics, isLoading } = useProgressMetrics(user?.id || "");
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={['left', 'right']}>
       <ScrollView className="flex-1">
-        <View className="p-4 space-y-6">
+        <View className="px-4 space-y-6">
           {isLoading || !metrics ? (
             <View className="flex-1 justify-center items-center">
               <Text>Loading metrics...</Text>
