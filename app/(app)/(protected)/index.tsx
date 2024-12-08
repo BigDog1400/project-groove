@@ -51,7 +51,7 @@ export default function Home() {
 	};
 
 	return (
-		<SafeAreaView className="flex-1 bg-background">
+		<SafeAreaView className="flex-1 bg-muted">
 			<View className="flex-1 justify-center px-4">
 				<View className="items-center">
 					<H1 className="mb-2">Today's Practice</H1>
@@ -71,7 +71,7 @@ export default function Home() {
 					) : (
 						<View className="w-full items-center">
 							{/* Exercise Card */}
-							<View className="bg-card w-full rounded-2xl p-6">
+							<View className="w-full rounded-2xl p-6 mb-6  border-2 border-primary bg-white">
 								<View className="items-center mb-6">
 									<Text className="text-2xl font-bold text-center mb-2">
 										{todayExercise.exercise_name}
@@ -124,7 +124,7 @@ export default function Home() {
 							</View>
 
 							{/* Methodology Explanation */}
-							<View className="mt-6 p-4 bg-muted rounded-lg">
+							<View className="mt-6 p-4 bg-white rounded-lg">
 								<Text className="text-sm text-center">
 									💡 Grease the Groove: Practice frequently throughout the day with perfect form, staying fresh and never reaching fatigue.
 								</Text>
