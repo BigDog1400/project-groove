@@ -78,24 +78,6 @@ export function useSaveUserExercises() {
   });
 }
 
-export function useCompleteDailyExercise(userId: string) {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase
-        .from("daily_exercise_assignments")
-        .update({ completed: true })
-        .eq("user_id", userId)
-        .eq("date", new Date().toISOString().split('T')[0]);
-      
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["today-exercise", userId] });
-    },
-  });
-}
 
 export function useLogSet() {
   const queryClient = useQueryClient();
