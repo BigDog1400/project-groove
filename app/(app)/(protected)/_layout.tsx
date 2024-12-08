@@ -70,6 +70,12 @@ export default function ProtectedLayout() {
 					headerShown: false,
 				}}
 			/>
+			<Tabs.Screen
+				name="reminder"
+				options={{
+					href: null, 
+				}}
+			/>
 		</Tabs>
 	);
 }

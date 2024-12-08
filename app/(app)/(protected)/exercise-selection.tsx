@@ -11,7 +11,7 @@ import { useExercises, useSaveUserExercises } from '../../../hooks/use-supabase-
 interface Exercise {
   id: string;
   name: string;
-  description: string;
+  description: string | null; // Allow description to be null
 }
 
 interface UserExercise {
@@ -125,17 +125,19 @@ export default function ExerciseSelectionScreen() {
             );
           })}
         </View>
-      </ScrollView>
-
         <View className="p-4">
           <Button
             disabled={selectedExercises.length === 0}
             onPress={handleSave}
-            className="w-full"
+            className="w-full mb-4"
           >
             <Text>Save Exercises</Text>
           </Button>
+          <Button onPress={() => router.push("/(app)/(protected)/reminder")}>
+            <Text>Go to Reminder Settings</Text>
+          </Button>
         </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
