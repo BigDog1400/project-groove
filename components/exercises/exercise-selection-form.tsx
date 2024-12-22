@@ -122,11 +122,11 @@ export function ExerciseSelectionForm({ onSaved, showTitle = true }: ExerciseSel
               </View>
               
               <Button 
-                variant="outline" 
-                className="w-full"
+                variant="neutral" 
+                className="w-full h-12"
                 onPress={() => router.push("/(app)/(protected)/reminder")}
               >
-                <Text className="text-base">⏰ Set Daily Reminder</Text>
+                <Text className="text-lg">Set Daily Reminder</Text>
               </Button>
             </View>
           )}
