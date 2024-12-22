@@ -85,6 +85,13 @@ export default function ProtectedLayout() {
 					href: null, 
 				}}
 			/>
+			<Tabs.Screen
+				name="logout"
+				options={{
+					href: null,
+					title: "Sign Out",
+				}}
+			/>
 		</Tabs>
 	);
 }
