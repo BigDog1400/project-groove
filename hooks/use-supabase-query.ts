@@ -19,14 +19,29 @@ export function useUserExercises(userId: string) {
   return useQuery({
     queryKey: ["user-exercises", userId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("user_exercises")
-        .select("*, exercises(*)")
-        .eq("user_id", userId)
-        .eq("active", true);
-      if (error) throw error;
-      return data;
+      
+      if (!userId) {
+        return [];
+      }
+      
+      try {
+        const { data, error } = await supabase
+          .from("user_exercises")
+          .select("*, exercises(*)")
+          .eq("user_id", userId)
+          .eq("active", true);
+
+        if (error) {
+          throw error;
+        }
+
+        console.debug('useUserExercises data:', data);
+        return data;
+      } catch (e) {
+        throw e;
+      }
     },
+    enabled: Boolean(userId),
   });
 }
 
