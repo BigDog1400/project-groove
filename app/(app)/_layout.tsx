@@ -1,14 +1,12 @@
 import { Stack } from "expo-router";
 
 import { colors } from "@/constants/colors";
-import { useColorScheme } from "@/lib/useColorScheme";
 
 export const unstable_settings = {
 	initialRouteName: "(root)",
 };
 
 export default function AppLayout() {
-	const { colorScheme } = useColorScheme();
 
 	return (
 		<Stack screenOptions={{ headerShown: false, gestureEnabled: false }}>

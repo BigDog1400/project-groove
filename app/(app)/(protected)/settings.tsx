@@ -14,7 +14,7 @@ export default function Settings() {
 				<Button
 					className="w-full"
 					size="default"
-					variant="outline"
+					variant="neutral"
 					onPress={() => router.push("/(app)/(protected)/reminder")}
 				>
 					<Text>⏰ Reminder Settings</Text>
@@ -23,7 +23,7 @@ export default function Settings() {
 				<Button
 					className="w-full"
 					size="default"
-					variant="destructive"
+					variant="neutral"
 					onPress={() => router.push("/(app)/(protected)/logout")}
 				>
 					<Text>Sign Out</Text>
