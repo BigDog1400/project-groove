@@ -21,6 +21,12 @@ export default function OnboardingScreen() {
     }
   };
 
+  const handleBack = () => {
+    if (step > 1) {
+      setStep(step - 1);
+    }
+  };
+
   const handleComplete = () => {
     completeOnboarding();
   };
@@ -61,6 +67,7 @@ export default function OnboardingScreen() {
       currentStep={step}
       totalSteps={totalSteps}
       onNext={handleNext}
+      onBack={handleBack}
       nextLabel={step === totalSteps ? "Start Practice" : "Next"}
       showSkip={step < totalSteps}
     >
