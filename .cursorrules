@@ -1,0 +1,172 @@
+You are an expert in React Native, Expo, TypeScript, Supabase, NativeWind/TailwindCSS, and mobile app development.
+
+Code Style and Structure
+- Write concise, type-safe TypeScript code with accurate examples
+- Use functional programming patterns; avoid classes
+- Prefer iteration and modularization over code duplication
+- Use descriptive variable names that indicate purpose and type
+- Follow the established project structure:
+  - app/ (screens and navigation)
+  - assets/ (static files)
+  - components/ (reusable UI components)
+  - config/ (app configuration)
+  - constants/ (shared constants)
+  - lib/ (preconfigured libraries)
+
+Naming Conventions
+- Use PascalCase for components and interfaces
+- Use camelCase for variables, functions, and methods
+- Use lowercase with dashes for file names
+- Favor named exports for components and utilities
+
+TypeScript Usage
+- Use TypeScript for all code; prefer interfaces over types
+- Leverage type inference where possible
+- Use proper typing for Supabase responses and database models
+- Implement proper error handling with type checking
+
+Component Development
+- Build reusable components inspired by shadcn/ui design patterns
+- Use react-native-reusables components where applicable
+- Implement proper component prop interfaces
+- Follow mobile-first responsive design principles
+
+Styling
+- Use NativeWind/TailwindCSS for styling
+
+Neobrutalism Design System
+- Core Principles:
+  - High contrast colors
+  - Black borders (2-4px)
+  - Black offset shadows (4-8px)
+  - Simple geometric shapes
+  - Bold typography
+
+Design Rules
+- Use bold, saturated colors
+- Always include black borders
+- Add offset shadows to interactive elements
+- Keep animations simple (translate on press)
+- Maintain large tap targets for mobile 
+
+State Management and Data Flow
+- Use Supabase for authentication and data persistence
+- Implement proper loading and error states
+
+Expo Router Conventions
+- Follow file-based routing structure in the app/ directory:
+  - app/index.tsx -> '/' (root route)
+  - app/settings/index.tsx -> '/settings' 
+  - app/profile/[id].tsx -> '/profile/123' (dynamic route)
+  - app/posts/[...slug].tsx -> catches '/posts/a/b/c' (catch-all route)
+  - _layout.tsx files wrap child routes with shared elements
+
+Route Modifiers
+- Use parentheses for special routing behavior:
+  - (tabs)/ -> Groups tab-based navigation without affecting URL
+  - (auth)/ -> Groups authentication routes
+  - [id]/ -> Dynamic segment capturing values
+  - [...rest] -> Catch-all dynamic segments
+  - _ prefix -> Hidden from URL (like _layout.tsx)
+  - + prefix -> Special system files (+not-found.tsx, +error.tsx)
+
+Layout Files (_layout.tsx)
+- Purpose:
+  - Define navigation structure (Stack, Tabs, Drawer)
+  - Share UI elements across child routes
+  - Configure navigation options
+  - Handle authentication/protection
+- Example Structure:
+  - app/_layout.tsx (root layout)
+  - app/(tabs)/_layout.tsx (tab navigation)
+  - app/(auth)/_layout.tsx (auth flow)
+
+Navigation Implementation
+- Stack Navigation:
+  ```tsx
+  // app/(main)/_layout.tsx
+  import { Stack } from 'expo-router'
+  
+  export default function MainLayout() {
+    return (
+      <Stack>
+        <Stack.Screen name="index" options={{ title: 'Home' }} />
+        <Stack.Screen name="profile" options={{ title: 'Profile' }} />
+      </Stack>
+    )
+  }
+  ```
+
+- Tab Navigation:
+  ```tsx
+  // app/(tabs)/_layout.tsx
+  import { Tabs } from 'expo-router'
+  
+  export default function TabLayout() {
+    return (
+      <Tabs>
+        <Tabs.Screen name="home" options={{ title: 'Home' }} />
+        <Tabs.Screen name="settings" options={{ title: 'Settings' }} />
+      </Tabs>
+    )
+  }
+  ```
+
+Navigation Patterns
+- Use Link for declarative navigation:
+  ```tsx
+  import { Link } from 'expo-router'
+  
+  // Static navigation
+  <Link href="/settings">Go to Settings</Link>
+  
+  // Dynamic navigation
+  <Link href={`/profile/${userId}`}>View Profile</Link>
+  ```
+
+- Use router for programmatic navigation:
+  ```tsx
+  import { router } from 'expo-router'
+  
+  // Navigate programmatically
+  router.push('/settings')
+  
+  // Navigate back
+  router.back()
+  
+  // Replace current route
+  router.replace('/login')
+  ```
+
+Route Groups and Organization
+- Common Group Patterns:
+  - (auth)/ -> Authentication flows
+  - (tabs)/ -> Main tab navigation
+  - (modals)/ -> Modal screens
+  - (drawer)/ -> Drawer navigation
+  - (protected)/ -> Protected routes
+
+Error Handling
+- Create error boundaries with special files:
+  - +error.tsx -> Handle errors within a route group
+  - +not-found.tsx -> Handle 404 errors
+  - These can be placed at any level in the routing tree
+
+Route Context and Params
+- Access route information:
+  ```tsx
+  import { useLocalSearchParams, useSegments } from 'expo-router'
+  
+  // Get dynamic params
+  const { id } = useLocalSearchParams()
+  
+  // Get current route segments
+  const segments = useSegments()
+  ```
+
+Route Organization
+- Group related routes in (group) directories
+- Use index.tsx for parent directory routes
+- Implement proper dynamic route handling
+- Keep route hierarchy shallow when possible 
+
