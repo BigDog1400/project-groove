@@ -13,6 +13,7 @@ interface OnboardingLayoutProps {
   showSkip?: boolean;
   onNext?: () => void;
   nextLabel?: string;
+  onBack?: () => void;
 }
 
 export function OnboardingLayout({
@@ -21,16 +22,18 @@ export function OnboardingLayout({
   totalSteps,
   showSkip = true,
   onNext,
-  nextLabel = 'Next'
+  nextLabel = 'Next',
+  onBack,
+   
 }: OnboardingLayoutProps) {
   const pathname = usePathname();
   const isLastStep = currentStep === totalSteps;
 
   const handleBack = () => {
     if (currentStep === 1) {
-      router.back();
+        // do nothing 
     } else {
-      router.back();
+      onBack?.();
     }
   };
 
@@ -45,6 +48,7 @@ export function OnboardingLayout({
           variant="default"
           size="icon"
           onPress={handleBack}
+          disabled={currentStep === 1}
         >
           <Ionicons name="chevron-back" size={24} />
         </Button>
@@ -78,11 +82,10 @@ export function OnboardingLayout({
       {/* Bottom Navigation */}
       <View className="p-4">
         <Button
-          size="lg"
           className="w-full"
           onPress={onNext}
         >
-          <Text className="text-lg font-medium">{nextLabel}</Text>
+          <Text>{nextLabel}</Text>
         </Button>
       </View>
     </SafeAreaView>

@@ -1,12 +1,24 @@
-import { Stack } from "expo-router";
+import { router, Stack, usePathname } from "expo-router";
 
 import { colors } from "@/constants/colors";
+import { useOnboarding } from "@/lib/hooks/use-onboarding";
+import { useEffect } from "react";
+import { useAuth } from "@/hooks/use-auth";
 
 export const unstable_settings = {
 	initialRouteName: "(root)",
 };
 
 export default function AppLayout() {
+	const { isComplete } = useOnboarding();
+	const { user } = useAuth();
+	const pathname = usePathname();
+
+	useEffect(() => {
+		if (!isComplete && pathname !== "/(app)/(protected)/onboarding" && user) {
+			router.replace('/(app)/(protected)/onboarding');
+		}
+	}, [isComplete, pathname, user]);
 
 	return (
 		<Stack screenOptions={{ headerShown: false, gestureEnabled: false }}>
