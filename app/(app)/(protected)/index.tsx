@@ -91,9 +91,9 @@ export default function Home() {
 									<Text className="text-base text-center text-muted-foreground">
 										{getProgressMessage(todayExercise.sets_count)}
 									</Text>
-									<View className="w-full bg-muted h-2 rounded-full mt-4">
+									<View className="w-full h-3 rounded-full mt-4 border-2 border-border">
 										<View 
-											className="bg-primary h-full rounded-full" 
+											className="bg-main h-full rounded-full" 
 											style={{ 
 												width: `${Math.min((todayExercise.sets_count / RECOMMENDED_DAILY_SETS) * 100, 100)}%` 
 											}} 
@@ -124,8 +124,8 @@ export default function Home() {
 							</View>
 
 							{/* Methodology Explanation */}
-							<View className="mt-6 p-4 bg-white rounded-lg">
-								<Text className="text-sm text-center">
+							<View className="mt-6 relative w-full border-2 border-border p-4 rounded-xl text-mtext bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+								<Text className="text-md font-base [&_p]:leading-relaxed">
 									💡 Grease the Groove: Practice frequently throughout the day with perfect form, staying fresh and never reaching fatigue.
 								</Text>
 							</View>

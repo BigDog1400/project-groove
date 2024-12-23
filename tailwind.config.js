@@ -20,7 +20,7 @@ module.exports = {
 			secondaryBlack: '#212121', 
 		  },
 		  borderRadius: {
-			base: '16px'
+			base: '20px'
 		  },
 		  boxShadow: {
 			shadow: 'var(--shadow)'

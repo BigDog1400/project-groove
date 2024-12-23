@@ -126,7 +126,7 @@ export function ExerciseSelectionForm({ onSaved, showTitle = true }: ExerciseSel
                 className="w-full h-12"
                 onPress={() => router.push("/(app)/(protected)/reminder")}
               >
-                <Text className="text-lg">Set Daily Reminder</Text>
+                <Text className="text-lg">⏰ Set Daily Reminder</Text>
               </Button>
             </View>
           )}
@@ -155,7 +155,8 @@ export function ExerciseSelectionForm({ onSaved, showTitle = true }: ExerciseSel
                 <View className="flex-row items-center justify-between mb-4">
                   <Text className="text-xl font-bold flex-1">{exercise.name}</Text>
                   <Button
-                    variant={isSelected ? "default" : "outline"}
+                    variant={isSelected ? "default" : "neutral"}
+                    className="h-12"
                     onPress={() => toggleExercise(exercise)}
                   >
                     <Text>{isSelected ? 'Selected' : 'Select'}</Text>
