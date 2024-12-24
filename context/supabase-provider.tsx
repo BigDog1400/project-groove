@@ -1,7 +1,6 @@
 import { Session, User } from "@supabase/supabase-js";
 import { useRouter, useSegments, SplashScreen } from "expo-router";
 import { createContext, useContext, useEffect, useState } from "react";
-
 import { supabase } from "@/config/supabase";
 
 SplashScreen.preventAutoHideAsync();
@@ -13,6 +12,7 @@ type SupabaseContextProps = {
 	signUp: (email: string, password: string) => Promise<void>;
 	signInWithPassword: (email: string, password: string) => Promise<void>;
 	signOut: () => Promise<void>;
+	hasCompletedOnboarding: boolean;
 };
 
 type SupabaseProviderProps = {
@@ -26,6 +26,7 @@ export const SupabaseContext = createContext<SupabaseContextProps>({
 	signUp: async () => {},
 	signInWithPassword: async () => {},
 	signOut: async () => {},
+	hasCompletedOnboarding: false,
 });
 
 export const useSupabase = () => useContext(SupabaseContext);
@@ -36,10 +37,29 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
 	const [user, setUser] = useState<User | null>(null);
 	const [session, setSession] = useState<Session | null>(null);
 	const [initialized, setInitialized] = useState<boolean>(false);
+	const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean>(false);
+
+	const checkOnboardingStatus = async (userId: string) => {
+		try {
+			const { data, error } = await supabase
+				.from('users')
+				.select('onboarding_completed')
+				.eq('id', userId)
+				.single();
+
+			if (error) throw error;
+
+			setHasCompletedOnboarding(data?.onboarding_completed ?? false);
+		} catch (error) {
+			console.error('Error checking onboarding status:', error);
+			setHasCompletedOnboarding(false);
+		}
+	};
 
 	const signUp = async (email: string, password: string) => {
 		const { error } = await supabase.auth.signUp({
 			email,
+			
 			password,
 		});
 		if (error) {
@@ -47,7 +67,6 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
 		}
 	};
 
-	
 	const signInWithPassword = async (email: string, password: string) => {
 		const { error } = await supabase.auth.signInWithPassword({
 			email,
@@ -69,12 +88,18 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
 		supabase.auth.getSession().then(({ data: { session } }) => {
 			setSession(session);
 			setUser(session ? session.user : null);
+			if (session?.user) {
+				checkOnboardingStatus(session.user.id);
+			}
 			setInitialized(true);
 		});
 
 		supabase.auth.onAuthStateChange((_event, session) => {
 			setSession(session);
 			setUser(session ? session.user : null);
+			if (session?.user) {
+				checkOnboardingStatus(session.user.id);
+			}
 		});
 	}, []);
 
@@ -82,22 +107,22 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
 		if (!initialized) return;
 
 		const inProtectedGroup = segments[1] === "(protected)";
+		const inOnboardingRoute = segments[2] === "onboarding";
 
-		if (session && !inProtectedGroup) {
-			router.replace("/(app)/(protected)");
-		} else if (!session) {
+		if (session) {
+			if (!hasCompletedOnboarding && !inOnboardingRoute) {
+				router.replace("/(app)/(protected)/onboarding");
+			} else if (hasCompletedOnboarding && !inProtectedGroup) {
+				router.replace("/(app)/(protected)");
+			}
+		} else {
 			router.replace("/(app)/welcome");
 		}
-
-		/* HACK: Something must be rendered when determining the initial auth state... 
-		instead of creating a loading screen, we use the SplashScreen and hide it after
-		a small delay (500 ms)
-		*/
 
 		setTimeout(() => {
 			SplashScreen.hideAsync();
 		}, 500);
-	}, [initialized, session]);
+	}, [initialized, session, hasCompletedOnboarding, segments]);
 
 	return (
 		<SupabaseContext.Provider
@@ -108,6 +133,7 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
 				signUp,
 				signInWithPassword,
 				signOut,
+				hasCompletedOnboarding,
 			}}
 		>
 			{children}

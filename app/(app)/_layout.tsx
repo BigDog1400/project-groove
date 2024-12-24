@@ -1,27 +1,20 @@
-import { router, Stack, usePathname } from "expo-router";
-
-import { colors } from "@/constants/colors";
-import { useOnboarding } from "@/lib/hooks/use-onboarding";
-import { useEffect } from "react";
-import { useAuth } from "@/hooks/use-auth";
-
-export const unstable_settings = {
-	initialRouteName: "(root)",
-};
+import { Redirect, Stack } from 'expo-router';
+import { useSupabase } from '@/context/supabase-provider';
 
 export default function AppLayout() {
-	const { isComplete } = useOnboarding();
-	const { user } = useAuth();
-	const pathname = usePathname();
+	const { user } = useSupabase();
 
-	useEffect(() => {
-		if (!isComplete && pathname !== "/(app)/(protected)/onboarding" && user) {
-			router.replace('/(app)/(protected)/onboarding');
-		}
-	}, [isComplete, pathname, user]);
+	// If no user, redirect to sign in
+	if (!user) {
+		return <Redirect href="/sign-in" />;
+	}
 
 	return (
-		<Stack screenOptions={{ headerShown: false, gestureEnabled: false }}>
+		<Stack
+			screenOptions={{
+				headerShown: false,
+			}}
+		>
 			<Stack.Screen name="(protected)" />
 			<Stack.Screen name="welcome" />
 			<Stack.Screen
@@ -30,10 +23,6 @@ export default function AppLayout() {
 					presentation: "modal",
 					headerShown: true,
 					headerTitle: "Sign Up",
-					headerStyle: {
-						backgroundColor: colors.light.background,
-					},
-					headerTintColor: colors.light.foreground,
 					gestureEnabled: true,
 				}}
 			/>
@@ -43,23 +32,6 @@ export default function AppLayout() {
 					presentation: "modal",
 					headerShown: true,
 					headerTitle: "Sign In",
-					headerStyle: {
-						backgroundColor: colors.light.background,
-					},
-					headerTintColor: colors.light.foreground,
-					gestureEnabled: true,
-				}}
-			/>
-			<Stack.Screen
-				name="modal"
-				options={{
-					presentation: "modal",
-					headerShown: true,
-					headerTitle: "Modal",
-					headerStyle: {
-						backgroundColor: colors.light.background,
-					},
-					headerTintColor: colors.light.foreground,
 					gestureEnabled: true,
 				}}
 			/>

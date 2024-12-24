@@ -2,14 +2,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { ActivityIndicator, View } from "react-native";
 import * as z from "zod";
-
 import { SafeAreaView } from "@/components/safe-area-view";
 import { Button } from "@/components/ui/button";
 import { Form, FormField, FormInput } from "@/components/ui/form";
 import { Text } from "@/components/ui/text";
 import { H1 } from "@/components/ui/typography";
 import { useSupabase } from "@/context/supabase-provider";
-import { useOnboarding } from "@/lib/hooks/use-onboarding";
 import { router } from "expo-router";
 
 const formSchema = z.object({
@@ -21,14 +19,13 @@ const formSchema = z.object({
 });
 
 export default function SignIn() {
-	const { signInWithPassword } = useSupabase();
-	const { isComplete } = useOnboarding();
+	const { signInWithPassword, hasCompletedOnboarding } = useSupabase();
 
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
-			email: "",
-			password: "",
+				email: "",
+				password: "",
 		},
 	});
 
@@ -37,21 +34,22 @@ export default function SignIn() {
 			await signInWithPassword(data.email, data.password);
 			form.reset();
 
-			// Check onboarding status and redirect accordingly
-			if (isComplete === false) {
-				router.replace('/(app)/(protected)/onboarding');
-			} else {
+			// Redirect based on onboarding status
+			if (hasCompletedOnboarding) {
 				router.replace('/(app)/(protected)');
+			} else {
+				router.replace('/(app)/(protected)/onboarding');
 			}
 		} catch (error: Error | any) {
-			console.log(error.message);
+			console.error('Error signing in:', error);
+			alert('Error signing in. Please try again.');
 		}
 	}
 
 	return (
 		<SafeAreaView className="flex-1 bg-background p-4" edges={["bottom"]}>
 			<View className="flex-1 gap-4 web:m-4">
-				<H1 className="self-start ">Sign In</H1>
+				<H1 className="self-start">Sign In</H1>
 				<Form {...form}>
 					<View className="gap-4">
 						<FormField
