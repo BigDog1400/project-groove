@@ -4,10 +4,10 @@ import { useSupabase } from '@/context/supabase-provider';
 export default function AppLayout() {
 	const { user } = useSupabase();
 
-	// If no user, redirect to sign in
-	if (!user) {
-		return <Redirect href="/sign-in" />;
-	}
+	// // If no user, redirect to sign in
+	// if (!user) {
+	// 	return <Redirect href="/sign-in" />;
+	// }
 
 	return (
 		<Stack

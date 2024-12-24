@@ -1,4 +1,4 @@
-import { Session, User } from "@supabase/supabase-js";
+import { AuthTokenResponsePassword, Session, User } from "@supabase/supabase-js";
 import { useRouter, useSegments, SplashScreen } from "expo-router";
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/config/supabase";
@@ -10,7 +10,7 @@ type SupabaseContextProps = {
 	session: Session | null;
 	initialized?: boolean;
 	signUp: (email: string, password: string) => Promise<void>;
-	signInWithPassword: (email: string, password: string) => Promise<void>;
+	signInWithPassword?: (email: string, password: string) => Promise<AuthTokenResponsePassword>;
 	signOut: () => Promise<void>;
 	hasCompletedOnboarding: boolean;
 };
@@ -24,7 +24,6 @@ export const SupabaseContext = createContext<SupabaseContextProps>({
 	session: null,
 	initialized: false,
 	signUp: async () => {},
-	signInWithPassword: async () => {},
 	signOut: async () => {},
 	hasCompletedOnboarding: false,
 });
@@ -48,7 +47,7 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
 				.single();
 
 			if (error) throw error;
-
+			console.log('onboarding_completed', data?.onboarding_completed);
 			setHasCompletedOnboarding(data?.onboarding_completed ?? false);
 		} catch (error) {
 			console.error('Error checking onboarding status:', error);
@@ -68,13 +67,14 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
 	};
 
 	const signInWithPassword = async (email: string, password: string) => {
-		const { error } = await supabase.auth.signInWithPassword({
+		const result = await supabase.auth.signInWithPassword({
 			email,
 			password,
 		});
-		if (error) {
-			throw error;
+		if (result.error) {
+			throw result.error;
 		}
+		return result;
 	};
 
 	const signOut = async () => {
@@ -108,14 +108,18 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
 
 		const inProtectedGroup = segments[1] === "(protected)";
 		const inOnboardingRoute = segments[2] === "onboarding";
+		const isLoginRoute = segments[1] === "sign-in" || segments[1] === "sign-up" || segments[1] === "welcome";
 
 		if (session) {
 			if (!hasCompletedOnboarding && !inOnboardingRoute) {
-				router.replace("/(app)/(protected)/onboarding");
+				console.log('hasCompletedOnboarding', hasCompletedOnboarding);
+				// router.replace("/(app)/(protected)/onboarding");
 			} else if (hasCompletedOnboarding && !inProtectedGroup) {
-				router.replace("/(app)/(protected)");
+				console.log('hasCompletedOnboarding', hasCompletedOnboarding);
+				// router.replace("/(app)/(protected)");
 			}
-		} else {
+		} else if (!isLoginRoute) {
+			console.log('Redirecting to welcome');
 			router.replace("/(app)/welcome");
 		}
 

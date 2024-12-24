@@ -9,6 +9,7 @@ import { Text } from "@/components/ui/text";
 import { H1 } from "@/components/ui/typography";
 import { useSupabase } from "@/context/supabase-provider";
 import { router } from "expo-router";
+import { useOnboarding } from "@/lib/hooks/use-onboarding";
 
 const formSchema = z.object({
 	email: z.string().email("Please enter a valid email address."),
@@ -19,7 +20,8 @@ const formSchema = z.object({
 });
 
 export default function SignIn() {
-	const { signInWithPassword, hasCompletedOnboarding } = useSupabase();
+	const { signInWithPassword } = useSupabase();
+	const {checkOnboardingStatus} = useOnboarding();
 
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
@@ -31,10 +33,14 @@ export default function SignIn() {
 
 	async function onSubmit(data: z.infer<typeof formSchema>) {
 		try {
-			await signInWithPassword(data.email, data.password);
+			const { data: {
+				user,
+				session
+			} } = await signInWithPassword?.(data.email, data.password)!;
 			form.reset();
 
 			// Redirect based on onboarding status
+			const hasCompletedOnboarding = await checkOnboardingStatus(user?.id!);
 			if (hasCompletedOnboarding) {
 				router.replace('/(app)/(protected)');
 			} else {

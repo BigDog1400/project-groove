@@ -41,14 +41,14 @@ export function useOnboarding() {
     }
   }, [user?.id, supabase, router]);
 
-  const checkOnboardingStatus = useCallback(async () => {
-    if (!user?.id) return false;
+  const checkOnboardingStatus = useCallback(async (userId: string) => {
+    if (!userId) return false;
 
     try {
       const { data, error } = await supabase
         .from('users')
         .select('onboarding_completed')
-        .eq('id', user.id)
+        .eq('id', userId)
         .single();
 
       if (error) throw error;
@@ -58,7 +58,7 @@ export function useOnboarding() {
       console.error('Error checking onboarding status:', error);
       return false;
     }
-  }, [user?.id, supabase]);
+  }, [supabase]);
 
   return {
     completeOnboarding,
