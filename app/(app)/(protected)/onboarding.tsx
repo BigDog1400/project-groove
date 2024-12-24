@@ -5,18 +5,18 @@ import { WelcomeScreen } from '@/components/onboarding/welcome-screen';
 import { ExplanationScreen } from '@/components/onboarding/explanation-screen';
 import { HowToUseScreen } from '@/components/onboarding/how-to-use-screen';
 import { ExerciseSelectionForm } from '@/components/exercises/exercise-selection-form';
-import { View } from 'react-native';
+import { SafeAreaView, View } from 'react-native';
 import { H2, Muted } from '@/components/ui/typography';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { useOnboarding } from '@/lib/hooks/use-onboarding';
 
 export default function OnboardingScreen() {
   const [step, setStep] = useState(1);
-  const totalSteps = 4;
+  const totalSteps = 3;
   const { completeOnboarding } = useOnboarding();
 
   const handleNext = () => {
-    if (step < totalSteps) {
+    if (step <= totalSteps) {
       setStep(step + 1);
     }
   };
@@ -39,36 +39,38 @@ export default function OnboardingScreen() {
         return <ExplanationScreen />;
       case 3:
         return <HowToUseScreen />;
-      case 4:
-        return (
-          <View className="flex-1 px-4">
-            <Animated.View 
-              entering={FadeIn.delay(200).springify()}
-              className="mb-8"
-            >
-              <H2 className="text-center text-2xl mb-2">Let's Get Started!</H2>
-              <Muted className="text-center text-lg px-4 mb-8">
-                Choose your exercises and set your target reps
-              </Muted>
-            </Animated.View>
-            <ExerciseSelectionForm 
-              showTitle={false}
-              onSaved={handleComplete}
-            />
-          </View>
-        );
       default:
         return null;
     }
   };
 
+  if (step > totalSteps) {
+    return (
+      <SafeAreaView className="flex-1 bg-background">
+        <Animated.View 
+          entering={FadeIn}
+          className="px-4 pt-8 pb-4"
+        >
+          <H2 className="text-center text-2xl mb-2">Let's Get Started!</H2>
+          <Muted className="text-center text-lg">
+            Choose your exercises and set your target reps
+          </Muted>
+        </Animated.View>
+        <ExerciseSelectionForm 
+          showTitle={false}
+          onSaved={handleComplete}
+        />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <OnboardingLayout
       currentStep={step}
-      totalSteps={totalSteps}
+      totalSteps={totalSteps + 1}
       onNext={handleNext}
       onBack={handleBack}
-      nextLabel={step === totalSteps ? "Start Practice" : "Next"}
+      nextLabel={step === totalSteps ? "Choose Exercises" : "Next"}
       showSkip={step < totalSteps}
     >
       {renderStep()}
