@@ -48,7 +48,7 @@ export function OnboardingLayout({
           variant="default"
           size="icon"
           onPress={handleBack}
-          disabled={currentStep === 1}
+        //   disabled={currentStep === 1}
         >
           <Ionicons name="chevron-back" size={24} />
         </Button>
