@@ -1,48 +1,68 @@
-import { useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { router } from 'expo-router';
-
-const ONBOARDING_COMPLETE_KEY = '@groove/onboarding_complete';
+import { useCallback } from 'react';
+import { useRouter } from 'expo-router'
+import { useAuth } from '@/hooks/use-auth';
+import { supabase } from '@/config/supabase';
 
 export function useOnboarding() {
-  const [isComplete, setIsComplete] = useState<boolean | null>(null);
+  const { user } = useAuth();
+  const router = useRouter();
 
-  useEffect(() => {
-    checkOnboardingStatus();
-  }, []);
+  const completeOnboarding = useCallback(async () => {
+    if (!user?.id) return;
 
-  const checkOnboardingStatus = async () => {
     try {
-      const value = await AsyncStorage.getItem(ONBOARDING_COMPLETE_KEY);
-      setIsComplete(value === 'true');
-    } catch (error) {
-      console.error('Error checking onboarding status:', error);
-      setIsComplete(false);
-    }
-  };
+      const { error } = await supabase
+        .from('users')
+        .update({ onboarding_completed: true })
+        .eq('id', user.id);
 
-  const completeOnboarding = async () => {
-    try {
-      await AsyncStorage.setItem(ONBOARDING_COMPLETE_KEY, 'true');
-      setIsComplete(true);
-      router.push('/(app)/(protected)');
+      if (error) throw error;
+
+      router.replace('/(app)/(protected)');
     } catch (error) {
       console.error('Error completing onboarding:', error);
     }
-  };
+  }, [user?.id, router]);
 
-  const resetOnboarding = async () => {
+  const resetOnboarding = useCallback(async () => {
+    if (!user?.id) return;
+
     try {
-      await AsyncStorage.removeItem(ONBOARDING_COMPLETE_KEY);
-      setIsComplete(false);
+      const { error } = await supabase
+        .from('users')
+        .update({ onboarding_completed: false })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      router.replace('/(app)/(protected)/onboarding');
     } catch (error) {
       console.error('Error resetting onboarding:', error);
     }
-  };
+  }, [user?.id, supabase, router]);
+
+  const checkOnboardingStatus = useCallback(async () => {
+    if (!user?.id) return false;
+
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('onboarding_completed')
+        .eq('id', user.id)
+        .single();
+
+      if (error) throw error;
+
+      return data?.onboarding_completed ?? false;
+    } catch (error) {
+      console.error('Error checking onboarding status:', error);
+      return false;
+    }
+  }, [user?.id, supabase]);
 
   return {
-    isComplete,
     completeOnboarding,
     resetOnboarding,
+    checkOnboardingStatus,
   };
 } 
