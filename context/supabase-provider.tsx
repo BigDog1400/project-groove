@@ -85,20 +85,20 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
 	};
 
 	useEffect(() => {
-		supabase.auth.getSession().then(({ data: { session } }) => {
+		supabase.auth.getSession().then(async ({ data: { session } }) => {
 			setSession(session);
 			setUser(session ? session.user : null);
 			if (session?.user) {
-				checkOnboardingStatus(session.user.id);
+				await checkOnboardingStatus(session.user.id);
 			}
 			setInitialized(true);
 		});
 
-		supabase.auth.onAuthStateChange((_event, session) => {
+		supabase.auth.onAuthStateChange(async (_event, session) => {
 			setSession(session);
 			setUser(session ? session.user : null);
 			if (session?.user) {
-				checkOnboardingStatus(session.user.id);
+				await checkOnboardingStatus(session.user.id);
 			}
 		});
 	}, []);
@@ -113,10 +113,10 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
 		if (session) {
 			if (!hasCompletedOnboarding && !inOnboardingRoute) {
 				console.log('hasCompletedOnboarding', hasCompletedOnboarding);
-				// router.replace("/(app)/(protected)/onboarding");
+				router.replace("/(app)/(protected)/onboarding");
 			} else if (hasCompletedOnboarding && !inProtectedGroup) {
 				console.log('hasCompletedOnboarding', hasCompletedOnboarding);
-				// router.replace("/(app)/(protected)");
+				router.replace("/(app)/(protected)");
 			}
 		} else if (!isLoginRoute) {
 			console.log('Redirecting to welcome');
