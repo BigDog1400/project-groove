@@ -1,4 +1,4 @@
-import { View, ScrollView, ActivityIndicator } from 'react-native';
+import { View, ScrollView } from 'react-native';
 import { useState, useEffect } from 'react';
 import { router } from 'expo-router';
 import { Button } from '@/components/ui/button';
@@ -35,6 +35,18 @@ export function ExerciseSelectionForm({ onSaved, showTitle = true }: ExerciseSel
   } = useUserExercises(user?.id || "");
   const { mutateAsync: saveExercises, isSuccess: isSaveSuccess, isPending: isSaving } = useSaveUserExercises();
 
+  // Add debug log for component render
+  console.debug('ExerciseSelectionForm render:', {
+    isSaving,
+    isSaveSuccess,
+    selectedExercisesCount: selectedExercises.length,
+    userExercisesCount: userExercises.length
+  });
+
+  useEffect(() => {
+    console.debug('Save status changed:', { isSaveSuccess, isSaving });
+  }, [isSaveSuccess, isSaving]);
+
   useEffect(() => {
     console.debug('User ID:', user?.id);
     console.debug('User Exercises Loading:', isLoadingUserExercises);
@@ -45,6 +57,7 @@ export function ExerciseSelectionForm({ onSaved, showTitle = true }: ExerciseSel
   console.debug('Selected exercises:', selectedExercises);
   // Initialize selected exercises from user's active exercises
   useEffect(() => {
+    console.debug('userExercises changed, updating selected exercises:', userExercises);
     console.table(userExercises);
     if (userExercises.length > 0) {
       setSelectedExercises(
@@ -54,19 +67,23 @@ export function ExerciseSelectionForm({ onSaved, showTitle = true }: ExerciseSel
         }))
       );
     }
-  }, [userExercises, isSaveSuccess]);
+  }, [userExercises]);
 
   const toggleExercise = (exercise: Exercise) => {
+    console.debug('Toggling exercise:', exercise.name);
     setSelectedExercises((prev) => {
       const isSelected = prev.some((e) => e.exercise_id === exercise.id);
       if (isSelected) {
+        console.debug('Removing exercise:', exercise.name);
         return prev.filter((e) => e.exercise_id !== exercise.id);
       }
       if (prev.length >= 3) {
+        console.debug('Max exercises reached, not adding:', exercise.name);
         return prev;
       }
       // Get existing target reps if this exercise was previously selected
       const existingExercise = userExercises.find(ue => ue.exercise_id === exercise.id);
+      console.debug('Adding exercise:', exercise.name, 'with target reps:', existingExercise?.target_reps || 0);
       return [...prev, { 
         exercise_id: exercise.id, 
         target_reps: existingExercise?.target_reps || 0 
@@ -75,6 +92,7 @@ export function ExerciseSelectionForm({ onSaved, showTitle = true }: ExerciseSel
   };
 
   const updateTargetReps = (exerciseId: string, reps: string) => {
+    console.debug('Updating target reps:', { exerciseId, reps });
     setSelectedExercises((prev) =>
       prev.map((e) =>
         e.exercise_id === exerciseId
@@ -85,15 +103,28 @@ export function ExerciseSelectionForm({ onSaved, showTitle = true }: ExerciseSel
   };
 
   const handleSave = async () => {
-    if (!user?.id) return;
+    console.debug('Starting save process');
+    console.debug('Current state:', {
+      userId: user?.id,
+      selectedExercises,
+      isSaving,
+      isSaveSuccess
+    });
+
+    if (!user?.id) {
+      console.error('No user ID available');
+      return;
+    }
     
     try {
+      console.debug('Calling saveExercises with:', selectedExercises);
       await saveExercises(
         selectedExercises.map(e => ({
           ...e,
           user_id: user.id
         }))
       );
+      console.debug('Save completed successfully');
       onSaved?.();
     } catch (error) {
       console.error('Error saving exercises:', error);

@@ -26,10 +26,11 @@ export default function Home() {
 	}, [isLoading, todayExercises]);
 
 	const handleLogSet = async () => {
+		console.debug('handleLogSet called');
 		if (!todayExercise?.user_exercise_id || !todayExercise?.daily_assignment_id) return;
 		
 		try {
-			await logSet.mutateAsync({
+			 logSet.mutate({
 				user_exercise_id: todayExercise.user_exercise_id,
 				reps: todayExercise.target_reps,
 				daily_assignment_id: todayExercise.daily_assignment_id,

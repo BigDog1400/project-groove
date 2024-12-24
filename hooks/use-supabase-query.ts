@@ -62,15 +62,23 @@ export function useSaveUserExercises() {
   
   return useMutation({
     mutationFn: async (exercises: { user_id: string; exercise_id: string; target_reps: number }[]) => {
+      console.debug('Starting useSaveUserExercises mutation with:', exercises);
+      
       // First, deactivate all existing exercises
+      console.debug('Deactivating existing exercises for user:', exercises[0].user_id);
       const { error: deactivateError } = await supabase
         .from("user_exercises")
         .update({ active: false })
         .eq("user_id", exercises[0].user_id);
       
-      if (deactivateError) throw deactivateError;
+      if (deactivateError) {
+        console.error('Error deactivating exercises:', deactivateError);
+        throw deactivateError;
+      }
+      console.debug('Successfully deactivated existing exercises');
 
       // Then upsert new exercises with ON CONFLICT DO UPDATE
+      console.debug('Upserting new exercises:', exercises);
       const { error } = await supabase
         .from("user_exercises")
         .upsert(
@@ -84,9 +92,14 @@ export function useSaveUserExercises() {
           }
         );
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error upserting exercises:', error);
+        throw error;
+      }
+      console.debug('Successfully upserted exercises');
     },
     onSuccess: (_, variables) => {
+      console.debug('Mutation successful, invalidating queries for user:', variables[0].user_id);
       queryClient.invalidateQueries({ queryKey: ["user-exercises", variables[0].user_id] });
       queryClient.invalidateQueries({ queryKey: ["today-exercise", variables[0].user_id] });
     },
@@ -97,7 +110,7 @@ export function useSaveUserExercises() {
 export function useLogSet() {
   const queryClient = useQueryClient();
   
-  return useMutation({
+  const { mutate, isPending,data,error,status } = useMutation({
     mutationFn: async ({ 
       user_exercise_id, 
       reps, 
@@ -123,6 +136,8 @@ export function useLogSet() {
       queryClient.invalidateQueries({ queryKey: ["today-exercise"] });
     },
   });
+
+  return { mutate, isPending, data, error ,status};
 }
 
 // Type for exercise progress
