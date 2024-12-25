@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { H1, Muted } from '@/components/ui/typography';
 import { useAuth } from '@/hooks/use-auth';
 import { useExercises, useSaveUserExercises, useUserExercises } from '@/hooks/use-supabase-query';
+import { StyleSheet } from 'react-native';
+import { cn } from '@/lib/utils';
 
 interface Exercise {
   id: string;
@@ -140,16 +142,14 @@ export function ExerciseSelectionForm({ onSaved, showTitle = true }: ExerciseSel
   }
 
   return (
-    <View className="flex-1 bg-muted">
-   
-
+    <View className="flex-1 bg-neutral-100">
       <ScrollView className="flex-1" scrollEnabled={!isSaving}>
         <View className="p-4">
           {showTitle && (
-            <View className="mb-4">
-              <View className="items-center mb-4">
-                <H1 className="mb-2">Select Exercises</H1>
-                <Muted className="text-center">Choose up to 3 exercises and set your target reps for each</Muted>
+            <View className="mb-6">
+              <View className="items-center mb-6">
+                <H1 className="mb-3 text-3xl font-black">Select Exercises</H1>
+                <Muted className="text-center text-lg">Choose up to 3 exercises and set your target reps</Muted>
               </View>
               
               <Button 
@@ -162,52 +162,68 @@ export function ExerciseSelectionForm({ onSaved, showTitle = true }: ExerciseSel
             </View>
           )}
 
-          <View className="bg-white rounded-lg p-4 mb-6">
-            <Text className="text-sm text-center">
-              💡 Choose exercises you want to improve. You'll practice one exercise each day, rotating through your selection.
+          <View className="bg-white rounded-lg border-2 border-black p-4 mb-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <Text className="text-base text-center font-medium">
+              💡 Choose exercises you want to improve. You'll practice one exercise each day.
             </Text>
           </View>
 
           {exercises.map((exercise) => {
-            const isSelected = selectedExercises.some(
-              (e) => e.exercise_id === exercise.id
-            );
-            const userExercise = selectedExercises.find(
-              (e) => e.exercise_id === exercise.id
-            );
+            const isSelected = selectedExercises.some(e => e.exercise_id === exercise.id);
+            const userExercise = selectedExercises.find(e => e.exercise_id === exercise.id);
+            const isMaxSelected = selectedExercises.length >= 3 && !isSelected;
 
             return (
               <View
-                key={exercise.id}
-                className={`mb-4 rounded-2xl border-2 bg-white p-6 ${
-                  isSelected ? 'border-primary' : 'border-border'
-                }`}
+                key={exercise.name}
+                className={cn(`mb-4 rounded-xl border-2 bg-white p-6
+                  ${isSelected ? 'border-black bg-bg' : 'border-neutral-300'}
+                  ${isMaxSelected ? 'opacity-50' : ''}
+                  ${isSelected ? styles.shadow : ''}
+                  `)}
               >
                 <View className="flex-row items-center justify-between mb-4">
-                  <Text className="text-xl font-bold flex-1">{exercise.name}</Text>
+                  <View className="flex-row items-center flex-1">
+                    <Text className="text-2xl font-bold">{exercise.name}</Text>
+                  </View>
                   <Button
                     variant={isSelected ? "default" : "neutral"}
-                    className="h-12"
                     onPress={() => toggleExercise(exercise)}
+                    disabled={isMaxSelected}
                   >
-                    <Text>{isSelected ? 'Selected' : 'Select'}</Text>
+                    <Text className="font-bold">{isSelected ? '✓ Selected' : 'Select'}</Text>
                   </Button>
                 </View>
 
                 {isSelected && (
-                  <View>
-                    <Text className="text-base text-muted-foreground mb-2">
-                      Target reps per set
+                  <View className="mt-4 border-t-2 border-black pt-4">
+                    <Text className="text-lg font-bold mb-2">
+                      Target Reps per Set
                     </Text>
-                    <Input
-                      keyboardType="numeric"
-                      value={userExercise?.target_reps.toString()}
-                      onChangeText={(value) =>
-                        updateTargetReps(exercise.id, value)
-                      }
-                      placeholder="Enter target reps"
-                      className="h-14"
-                    />
+                    <View className="flex-row items-center">
+                      <Button
+                        variant="neutral"
+                        className="h-12 w-12 border-2 border-black mr-2"
+                        onPress={() => updateTargetReps(exercise.id, 
+                          String(Math.max(0, (parseInt(userExercise?.target_reps.toString() || '0') - 1))))}
+                      >
+                        <Text className="text-xl font-bold">-</Text>
+                      </Button>
+                      <Input
+                        keyboardType="numeric"
+                        value={userExercise?.target_reps.toString()}
+                        onChangeText={(value) => updateTargetReps(exercise.id, value)}
+                        className="h-12 flex-1 text-center text-xl font-bold border-2 border-black"
+                      />
+                      <Button
+                        variant="neutral"
+                        className="h-12 w-12 border-2 border-black ml-2"
+                        onPress={() => updateTargetReps(exercise.id, 
+                          String((parseInt(userExercise?.target_reps.toString() || '0') + 1)))}
+                      >
+                        <Text className="text-xl font-bold">+</Text>
+                      </Button>
+                    </View>
                   </View>
                 )}
               </View>
@@ -218,7 +234,7 @@ export function ExerciseSelectionForm({ onSaved, showTitle = true }: ExerciseSel
         <View className="h-20" />
       </ScrollView>
 
-      <View className="absolute bottom-0 left-0 right-0 border-t border-border p-4 bg-white/95">
+      <View className="absolute bottom-0 left-0 right-0 border-t-2 border-black p-4 bg-white">
         <Button
           className="w-full h-14"
           size="lg"
@@ -233,3 +249,13 @@ export function ExerciseSelectionForm({ onSaved, showTitle = true }: ExerciseSel
     </View>
   );
 }
+
+
+const styles = StyleSheet.create({
+  shadow: {
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+  },
+});
