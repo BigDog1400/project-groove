@@ -9,7 +9,8 @@ import { Text } from "@/components/ui/text";
 import { H1, H3, Muted } from "@/components/ui/typography";
 import { Fab } from "@/components/ui/fab";
 import { StreakFlame } from "@/components/ui/streak-flame";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { ShareableStreak } from "@/components/ShareableStreak";
 
 const RECOMMENDED_DAILY_SETS = 6;
 
@@ -20,6 +21,7 @@ export default function Home() {
 	const todayExercise = todayExercises?.[0];
 	const logSet = useLogSet();
 	const socialShare = useSocialShare();
+	const shareableRef = useRef(null);
 
 	// If no exercises and not loading, redirect to onboarding
 	useEffect(() => {
@@ -53,7 +55,7 @@ export default function Home() {
 		
 		try {
 			await socialShare.mutateAsync({
-				userId: user.id,
+				viewRef: shareableRef,
 				streak: metrics.currentStreak,
 				dailyCompletion: metrics.dailyCompletion,
 			});
@@ -124,6 +126,7 @@ export default function Home() {
 									</View>
 								</View>
 								
+								{/* <TallyMarks count={6}/> */}
 								{/* Log Set Button */}
 								<Button 
 									className="w-full h-14" 
@@ -170,6 +173,15 @@ export default function Home() {
 				</View>
 			</View>
 			<Fab onPress={() => router.push("/(app)/(protected)/exercise-selection")} />
+
+			{/* Add ShareableStreak component hidden off-screen */}
+			<View className="absolute -left-[9999px]">
+				<ShareableStreak
+					ref={shareableRef}
+					streak={12}
+					dailyCompletion={metrics?.dailyCompletion ?? 0}
+				/>
+			</View>
 		</SafeAreaView>
 	);
 }
