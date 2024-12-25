@@ -177,6 +177,7 @@ const calculateMetrics = (
   dailyCompletion: number;
   weeklyProgress: { date: string; completion: number }[];
   exerciseProgress: ExerciseProgress[];
+  totalRepsToday: number;
 } => {
   // Organize sets by date
   const setsByDate = sets.reduce((acc: any, set: any) => {
@@ -258,11 +259,15 @@ const calculateMetrics = (
     []
   );
 
+  // Calculate total reps for today
+  const totalRepsToday = todaySets.reduce((total: number, set: { reps: number }) => total + (set.reps || 0), 0);
+
   return {
     currentStreak,
     longestStreak,
     dailyCompletion: Math.min(100, dailyCompletion),
     weeklyProgress,
     exerciseProgress,
+    totalRepsToday,
   };
 };

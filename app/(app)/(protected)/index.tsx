@@ -52,6 +52,7 @@ export default function Home() {
 
 	const handleShare = async () => {
 		if (!user?.id || !metrics) return;
+		console.log('handleShare called', metrics);
 		
 		try {
 			await socialShare.mutateAsync({
@@ -179,7 +180,7 @@ export default function Home() {
 				<ShareableStreak
 					ref={shareableRef}
 					streak={12}
-					dailyCompletion={metrics?.dailyCompletion ?? 0}
+					dailyCompletion={metrics?.totalRepsToday ?? 0}
 				/>
 			</View>
 		</SafeAreaView>
