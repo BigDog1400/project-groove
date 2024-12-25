@@ -1,6 +1,7 @@
 import { Tabs, usePathname } from "expo-router";
-import { Pressable } from "react-native";
+import { Platform, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors } from "@/constants/colors";
 import { useColorScheme } from "@/lib/useColorScheme";
@@ -8,41 +9,53 @@ import { useColorScheme } from "@/lib/useColorScheme";
 export default function ProtectedLayout() {
 	const { colorScheme } = useColorScheme();
 	const pathname = usePathname();
+	const insets = useSafeAreaInsets();
 	const isOnboarding = pathname === "/(app)/(protected)/onboarding";
 
 	return (
 		<Tabs
-			screenOptions={({ navigation }) => ({
-				headerShown: !isOnboarding,
-				headerRight: !isOnboarding ? () => (
-					<Pressable 
-						onPress={() => navigation.navigate("settings")}
-						className="mr-4"
-					>
-						<Ionicons 
-							name="settings-outline" 
-							size={24} 
-							color={colorScheme === "dark" ? colors.dark.foreground : colors.light.foreground}
-						/>
-					</Pressable>
-				) : undefined,
+			screenOptions={{
+				headerShown: false,
 				tabBarStyle: {
-					backgroundColor:
-						colorScheme === "dark"
-							? colors.dark.background
-							: colors.light.background,
 					display: isOnboarding ? 'none' : 'flex',
+					backgroundColor: colors.light.background,
+					borderTopWidth: 2,
+					borderTopColor: colors.light.foreground,
+					height: 60 + insets.bottom,
+					paddingBottom: insets.bottom,
+					paddingTop: 0,
+					paddingHorizontal: 8,
+					elevation: 0,
+					shadowOpacity: 0,
+					position: 'absolute',
+					bottom: 0,
+					left: 0,
+					right: 0,
 				},
-				tabBarActiveTintColor:
-					colorScheme === "dark"
-						? colors.dark.foreground
-						: colors.light.foreground,
-			})}
+				tabBarItemStyle: {
+					backgroundColor: 'transparent',
+					margin: 4,
+					borderRadius: 8,
+					borderWidth: 2,
+					borderColor: colors.light.foreground,
+					height: 44,
+					overflow: Platform.select({
+						ios: 'hidden',
+						android: 'visible'
+					}),
+				},
+				tabBarShowLabel: false,
+				tabBarIconStyle: {
+					marginTop: 0,
+				},
+				tabBarActiveTintColor: colors.light.foreground,
+				tabBarInactiveTintColor: colors.light.foreground,
+				tabBarActiveBackgroundColor: colors.light.accent,
+			}}
 		>
 			<Tabs.Screen 
 				name="index" 
 				options={{
-					title: "Today",
 					tabBarIcon: ({ color }) => (
 						<Ionicons name="today-outline" size={24} color={color} />
 					),
@@ -51,7 +64,6 @@ export default function ProtectedLayout() {
 			<Tabs.Screen 
 				name="exercise-selection" 
 				options={{
-					title: "Exercises",
 					tabBarIcon: ({ color }) => (
 						<Ionicons name="barbell-outline" size={24} color={color} />
 					),
@@ -60,7 +72,6 @@ export default function ProtectedLayout() {
 			<Tabs.Screen 
 				name="progress" 
 				options={{
-					title: "Progress",
 					tabBarIcon: ({ color }) => (
 						<Ionicons name="stats-chart-outline" size={24} color={color} />
 					),
@@ -69,13 +80,15 @@ export default function ProtectedLayout() {
 			<Tabs.Screen 
 				name="settings" 
 				options={{
-					href: null, // Hide from tab bar but keep accessible
+					tabBarIcon: ({ color }) => (
+						<Ionicons name="settings-outline" size={24} color={color} />
+					),
 				}}
 			/>
 			<Tabs.Screen 
 				name="onboarding" 
 				options={{
-					href: null, // Hide from tab bar
+					href: null,
 					headerShown: false,
 					tabBarStyle: { display: 'none' },
 				}}
@@ -90,7 +103,6 @@ export default function ProtectedLayout() {
 				name="logout"
 				options={{
 					href: null,
-					title: "Sign Out",
 				}}
 			/>
 		</Tabs>

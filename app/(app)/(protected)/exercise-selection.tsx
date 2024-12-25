@@ -8,7 +8,7 @@ export default function ExerciseSelectionScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-muted" edges={['left', 'right']}>
+    <SafeAreaView className="flex-1 bg-muted" >
       <ExerciseSelectionForm onSaved={handleSaved} />
     </SafeAreaView>
   );
