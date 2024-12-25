@@ -22,13 +22,13 @@ export const ShareableStreak = forwardRef<ViewShot, ShareableStreakProps>(
             <View className="flex-row items-center justify-between my-auto">
               {/* Left side text */}
               <View>
-                <Text className="text-6xl font-bold text-[#FF6B6B] mb-2">
+                <Text className="text-6xl font-black text-[#FF7171] mb-2">
                   I'm on a
                 </Text>
-                <Text className="text-[320px] leading-[320px] font-black text-[#FF6B6B]">
+                <Text className="text-[320px] leading-[320px] font-black text-[#FF7171]">
                   {streak}
                 </Text>
-                <Text className="text-6xl font-bold text-[#FF6B6B] -mt-8">
+                <Text className="text-6xl font-black text-[#FF7171] -mt-8">
                   daily training streak!
                 </Text>
               </View>
@@ -37,18 +37,18 @@ export const ShareableStreak = forwardRef<ViewShot, ShareableStreakProps>(
               <MaterialCommunityIcons
                 name="fire" 
                 size={400} 
-                color={streak > 0 ? "#FF9600" : "#9CA3AF"}
+                color={streak > 0 ? "#FF9F45" : "#9CA3AF"}
               />
             </View>
 
             {/* Bottom section */}
             <View className="mt-auto">
               {/* Today's exercise card */}
-              <View className="bg-[#FFF8E7] rounded-3xl p-6 border-2 border-[#FF6B6B] mb-8">
-                <Text className="text-3xl font-bold text-[#FF6B6B] mb-2">
+              <View className="bg-[#FFF5F5] rounded-3xl p-6 border-2 border-[#FF7171] shadow-[4px_4px_0_0_rgba(255,113,113,0.5)] mb-8">
+                <Text className="text-3xl font-black text-[#FF7171] mb-2">
                   Today's Exercise
                 </Text>
-                <Text className="text-5xl font-black text-[#FF6B6B]">
+                <Text className="text-5xl font-black text-[#FF7171]">
                   {dailyCompletion} Pull-ups 💪
                 </Text>
               </View>
