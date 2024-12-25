@@ -57,6 +57,7 @@ export default function OnboardingScreen() {
           </Muted>
         </Animated.View>
         <ExerciseSelectionForm 
+          disableInsets={true}
           showTitle={false}
           onSaved={handleComplete}
         />

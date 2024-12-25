@@ -1,4 +1,4 @@
-import { View, ScrollView } from 'react-native';
+import { View, ScrollView, KeyboardAvoidingView, Platform, Pressable } from 'react-native';
 import { useState, useEffect } from 'react';
 import { router } from 'expo-router';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,8 @@ import { useAuth } from '@/hooks/use-auth';
 import { useExercises, useSaveUserExercises, useUserExercises } from '@/hooks/use-supabase-query';
 import { StyleSheet } from 'react-native';
 import { cn } from '@/lib/utils';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
 interface Exercise {
   id: string;
@@ -24,11 +26,14 @@ interface UserExercise {
 interface ExerciseSelectionFormProps {
   onSaved?: () => void;
   showTitle?: boolean;
+  disableInsets?: boolean;
 }
 
-export function ExerciseSelectionForm({ onSaved, showTitle = true }: ExerciseSelectionFormProps) {
+export function ExerciseSelectionForm({ onSaved, showTitle = true, disableInsets = false }: ExerciseSelectionFormProps) {
   const { user } = useAuth();
+  const insets = useSafeAreaInsets();
   const [selectedExercises, setSelectedExercises] = useState<UserExercise[]>([]);
+  const [hasChanges, setHasChanges] = useState(false);
   const { data: exercises = [], isLoading: isLoadingExercises } = useExercises();
   const { 
     data: userExercises = [], 
@@ -70,6 +75,19 @@ export function ExerciseSelectionForm({ onSaved, showTitle = true }: ExerciseSel
       );
     }
   }, [userExercises]);
+
+  // Track changes
+  useEffect(() => {
+    if (userExercises.length === 0) return;
+    
+    const hasChanges = selectedExercises.length !== userExercises.length ||
+      selectedExercises.some(selected => {
+        const existing = userExercises.find(ue => ue.exercise_id === selected.exercise_id);
+        return !existing || existing.target_reps !== selected.target_reps;
+      });
+    
+    setHasChanges(hasChanges);
+  }, [selectedExercises, userExercises]);
 
   const toggleExercise = (exercise: Exercise) => {
     console.debug('Toggling exercise:', exercise.name);
@@ -143,7 +161,12 @@ export function ExerciseSelectionForm({ onSaved, showTitle = true }: ExerciseSel
 
   return (
     <View className="flex-1 bg-neutral-100">
-      <ScrollView className="flex-1" scrollEnabled={!isSaving}>
+      <ScrollView 
+        className="flex-1" 
+        contentContainerStyle={{
+          paddingBottom: disableInsets ? 0 : insets.bottom + 80 // account for bottom nav + padding
+        }}
+      >
         <View className="p-4">
           {showTitle && (
             <View className="mb-6">
@@ -230,22 +253,32 @@ export function ExerciseSelectionForm({ onSaved, showTitle = true }: ExerciseSel
             );
           })}
         </View>
-        
-        <View className="h-20" />
       </ScrollView>
 
-      <View className="absolute bottom-0 left-0 right-0 border-t-2 border-black p-4 bg-white">
-        <Button
-          className="w-full h-14"
-          size="lg"
-          disabled={selectedExercises.length === 0 || isSaving}
-          onPress={handleSave}
+      {hasChanges && (
+        <Animated.View 
+          entering={FadeIn.duration(200)}
+          exiting={FadeOut.duration(200)}
+          className="absolute"
+          style={{
+            right: 16,
+            bottom: disableInsets ? 16 : insets.bottom + 32,
+          }}
         >
-          <Text className="text-lg">
-            {isSaving ? 'Saving...' : 'Save Exercises'}
-          </Text>
-        </Button>
-      </View>
+          <Pressable>
+            <Button
+              size="lg"
+              className="h-14 px-6 shadow-md"
+              disabled={selectedExercises.length === 0 || isSaving}
+              onPress={handleSave}
+            >
+              <Text className="text-lg">
+                {isSaving ? 'Saving...' : 'Save Changes'}
+              </Text>
+            </Button>
+          </Pressable>
+        </Animated.View>
+      )}
     </View>
   );
 }

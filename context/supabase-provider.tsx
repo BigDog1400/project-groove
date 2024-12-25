@@ -13,6 +13,7 @@ type SupabaseContextProps = {
 	signInWithPassword?: (email: string, password: string) => Promise<AuthTokenResponsePassword>;
 	signOut: () => Promise<void>;
 	hasCompletedOnboarding: boolean;
+	checkOnboardingStatus: (userId: string) => Promise<void>;
 };
 
 type SupabaseProviderProps = {
@@ -26,6 +27,7 @@ export const SupabaseContext = createContext<SupabaseContextProps>({
 	signUp: async () => {},
 	signOut: async () => {},
 	hasCompletedOnboarding: false,
+	checkOnboardingStatus: async () => {},
 });
 
 export const useSupabase = () => useContext(SupabaseContext);
@@ -138,6 +140,7 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
 				signInWithPassword,
 				signOut,
 				hasCompletedOnboarding,
+				checkOnboardingStatus,
 			}}
 		>
 			{children}
