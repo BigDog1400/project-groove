@@ -42,8 +42,8 @@ export function OnboardingLayout({
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
-      <View className="flex-row justify-between items-center p-4">
+    <SafeAreaView className="flex-1">
+      <View className="flex-row items-center justify-between px-4 h-16 pb-2">
         <Button
           variant="default"
           size="icon"
@@ -52,19 +52,20 @@ export function OnboardingLayout({
         >
           <Ionicons name="chevron-back" size={24} />
         </Button>
+        <View className="flex-row gap-x-2">
+          {Array.from({ length: totalSteps }).map((_, index) => (
+            <View
+              key={index}
+              className={`h-2 w-2 rounded-full ${
+                index < currentStep ? 'bg-gray-700' : 'bg-gray-500'
+              }`}
+            />
+          ))}
+        </View>
+        <View className="w-10" /> 
       </View>
 
-      {/* Progress Dots */}
-      <View className="flex-row justify-center gap-x-2 mb-4">
-        {Array.from({ length: totalSteps }).map((_, index) => (
-          <View
-            key={index}
-            className={`h-2 w-2 rounded-full ${
-              index < currentStep ? 'bg-primary' : 'bg-muted'
-            }`}
-          />
-        ))}
-      </View>
+      
 
       {/* Content */}
       <View className="flex-1">
