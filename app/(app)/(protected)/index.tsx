@@ -1,7 +1,8 @@
 import { router } from "expo-router";
 import { View, SafeAreaView, Alert } from "react-native";
 import { useAuth } from "@/hooks/use-auth";
-import { useTodayExercise, useLogSet } from "@/hooks/use-supabase-query";
+import { useTodayExercise, useLogSet, useProgressMetrics } from "@/hooks/use-supabase-query";
+import { useSocialShare } from "@/hooks/use-social-share";
 
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
@@ -15,8 +16,10 @@ const RECOMMENDED_DAILY_SETS = 6;
 export default function Home() {
 	const { user } = useAuth();
 	const { data: todayExercises, isLoading } = useTodayExercise(user?.id || "");
+	const { data: metrics } = useProgressMetrics(user?.id || "");
 	const todayExercise = todayExercises?.[0];
 	const logSet = useLogSet();
+	const socialShare = useSocialShare();
 
 	// If no exercises and not loading, redirect to onboarding
 	useEffect(() => {
@@ -40,6 +43,25 @@ export default function Home() {
 			Alert.alert(
 				'Error',
 				'Failed to log set. Please try again.',
+				[{ text: 'OK' }]
+			);
+		}
+	};
+
+	const handleShare = async () => {
+		if (!user?.id || !metrics) return;
+		
+		try {
+			await socialShare.mutateAsync({
+				userId: user.id,
+				streak: metrics.currentStreak,
+				dailyCompletion: metrics.dailyCompletion,
+			});
+		} catch (error) {
+			console.error('Error sharing:', error);
+			Alert.alert(
+				'Error',
+				'Failed to share your progress. Please try again.',
 				[{ text: 'OK' }]
 			);
 		}
@@ -116,6 +138,19 @@ export default function Home() {
 										}
 									</Text>
 								</Button>
+
+								{todayExercise.sets_count >= RECOMMENDED_DAILY_SETS && (
+									<Button
+										className="w-full mt-4"
+										variant="neutral"
+										onPress={handleShare}
+										disabled={socialShare.isPending}
+									>
+										<Text>
+											{socialShare.isPending ? 'Sharing...' : 'Share Your Progress! 🎉'}
+										</Text>
+									</Button>
+								)}
 
 								{todayExercise.sets_count > 0 && (
 									<Muted className="text-center mt-4">
