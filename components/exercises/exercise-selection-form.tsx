@@ -29,6 +29,9 @@ interface ExerciseSelectionFormProps {
   disableInsets?: boolean;
 }
 
+const TAB_BAR_HEIGHT = 60;
+const BUTTON_MARGIN = 16;
+
 export function ExerciseSelectionForm({ onSaved, showTitle = true, disableInsets = false }: ExerciseSelectionFormProps) {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
@@ -62,23 +65,36 @@ export function ExerciseSelectionForm({ onSaved, showTitle = true, disableInsets
   }, [user?.id, isLoadingUserExercises, userExercisesError, userExercises]);
 
   console.debug('Selected exercises:', selectedExercises);
-  // Initialize selected exercises from user's active exercises
+  
+  // Combined initialization and change tracking
   useEffect(() => {
-    console.debug('userExercises changed, updating selected exercises:', userExercises);
-    console.table(userExercises);
-    if (userExercises.length > 0) {
+    if (isLoadingUserExercises || isLoadingExercises) {
+      setHasChanges(false);
+      return;
+    }
+
+    // Initialize selected exercises if they haven't been set yet
+    if (userExercises.length > 0 && selectedExercises.length === 0) {
       setSelectedExercises(
         userExercises.map(ue => ({
           exercise_id: ue.exercise_id,
           target_reps: ue.target_reps
         }))
       );
+      return;
     }
-  }, [userExercises]);
-
-  // Track changes
-  useEffect(() => {
-    if (userExercises.length === 0) return;
+    
+    // If userExercises is empty but we have selected exercises, that's a change
+    if (userExercises.length === 0 && selectedExercises.length > 0) {
+      setHasChanges(true);
+      return;
+    }
+    
+    // If both are empty, no changes
+    if (userExercises.length === 0 && selectedExercises.length === 0) {
+      setHasChanges(false);
+      return;
+    }
     
     const hasChanges = selectedExercises.length !== userExercises.length ||
       selectedExercises.some(selected => {
@@ -87,7 +103,7 @@ export function ExerciseSelectionForm({ onSaved, showTitle = true, disableInsets
       });
     
     setHasChanges(hasChanges);
-  }, [selectedExercises, userExercises]);
+  }, [selectedExercises, userExercises, isLoadingUserExercises, isLoadingExercises]);
 
   const toggleExercise = (exercise: Exercise) => {
     console.debug('Toggling exercise:', exercise.name);
@@ -149,6 +165,26 @@ export function ExerciseSelectionForm({ onSaved, showTitle = true, disableInsets
     } catch (error) {
       console.error('Error saving exercises:', error);
     }
+  };
+
+  const getBottomOffset = () => {
+    if (disableInsets) return BUTTON_MARGIN;
+    
+    // iOS needs less space since it doesn't have system navigation
+    const platformOffset = Platform.select({
+      ios: BUTTON_MARGIN / 2, // 8px instead of 16px
+      android: BUTTON_MARGIN * 2,
+      default: BUTTON_MARGIN,
+    });
+
+    // On iOS, we can also reduce the tab bar offset since it's more compact
+    const tabOffset = Platform.select({
+      ios: TAB_BAR_HEIGHT - 16, // Reduce the tab bar offset on iOS
+      android: TAB_BAR_HEIGHT,
+      default: TAB_BAR_HEIGHT,
+    });
+
+    return tabOffset + insets.bottom + platformOffset;
   };
 
   if (isLoadingExercises || isLoadingUserExercises) {
@@ -255,20 +291,21 @@ export function ExerciseSelectionForm({ onSaved, showTitle = true, disableInsets
         </View>
       </ScrollView>
 
-      {hasChanges && (
+      {hasChanges && !isLoadingUserExercises && !isLoadingExercises && (
         <Animated.View 
           entering={FadeIn.duration(200)}
           exiting={FadeOut.duration(200)}
-          className="absolute"
-          style={{
-            right: 16,
-            bottom: disableInsets ? 16 : insets.bottom + 32,
-          }}
+          className="absolute left-0 right-0 items-center"
+          style={[
+            {
+              bottom: getBottomOffset(),
+            },
+            styles.fabShadow
+          ]}
         >
-          <Pressable>
             <Button
               size="lg"
-              className="h-14 px-6 shadow-md"
+              className="h-14 px-8"
               disabled={selectedExercises.length === 0 || isSaving}
               onPress={handleSave}
             >
@@ -276,7 +313,6 @@ export function ExerciseSelectionForm({ onSaved, showTitle = true, disableInsets
                 {isSaving ? 'Saving...' : 'Save Changes'}
               </Text>
             </Button>
-          </Pressable>
         </Animated.View>
       )}
     </View>
@@ -290,5 +326,13 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 2, height: 2 },
     shadowOpacity: 1,
     shadowRadius: 0,
+    elevation: 4, // for Android
   },
+  fabShadow: {
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 2,
+    elevation: 8, // for Android
+  }
 });
