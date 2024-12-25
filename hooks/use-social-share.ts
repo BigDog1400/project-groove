@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { captureRef } from "react-native-view-shot";
-import { Share } from "react-native";
+import { Share, Platform } from "react-native";
+import * as Sharing from 'expo-sharing';
 
 interface ShareImageParams {
   viewRef: React.RefObject<any>;
@@ -19,17 +20,28 @@ export function useSocialShare() {
           result: 'tmpfile'
         });
 
-        // Share the image
-        await Share.share({
-          url: `file://${uri}`,
-          message: `I'm on a ${streak} day streak! 🔥`,
-          title: 'Project Groove Streak',
-        }, {
-          dialogTitle: 'Share Your Streak',
-          subject: 'Project Groove Streak',
-        });
+        const message = `I'm on a ${streak} day streak! 🔥`;
 
-        return { success: true };
+        if (Platform.OS === 'android') {
+          // On Android, we need to share the file directly
+          const shareResult = await Sharing.shareAsync(uri, {
+            dialogTitle: 'Share Your Streak',
+            mimeType: 'image/png',
+            UTI: 'public.png'
+          });
+          return { success: shareResult };
+        } else {
+          // On iOS, we can use the Share API
+          await Share.share({
+            url: uri,
+            message,
+            title: 'Project Groove Streak',
+          }, {
+            dialogTitle: 'Share Your Streak',
+            subject: 'Project Groove Streak',
+          });
+          return { success: true };
+        }
       } catch (error) {
         console.error('Error sharing:', error);
         throw error;
