@@ -21,7 +21,7 @@ const formSchema = z.object({
 
 export default function SignIn() {
 	const { signInWithPassword } = useSupabase();
-	const {checkOnboardingStatus} = useOnboarding();
+	const { checkOnboardingStatus } = useSupabase();
 
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),

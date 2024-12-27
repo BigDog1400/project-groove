@@ -1,13 +1,7 @@
-import { Redirect, Stack } from 'expo-router';
-import { useSupabase } from '@/context/supabase-provider';
+import { Stack } from 'expo-router';
+
 
 export default function AppLayout() {
-	const { user } = useSupabase();
-
-	// // If no user, redirect to sign in
-	// if (!user) {
-	// 	return <Redirect href="/sign-in" />;
-	// }
 
 	return (
 		<Stack

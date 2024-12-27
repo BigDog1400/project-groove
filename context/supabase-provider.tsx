@@ -13,7 +13,7 @@ type SupabaseContextProps = {
 	signInWithPassword?: (email: string, password: string) => Promise<AuthTokenResponsePassword>;
 	signOut: () => Promise<void>;
 	hasCompletedOnboarding: boolean;
-	checkOnboardingStatus: (userId: string) => Promise<void>;
+	checkOnboardingStatus: (userId: string) => Promise<boolean>;
 };
 
 type SupabaseProviderProps = {
@@ -27,7 +27,7 @@ export const SupabaseContext = createContext<SupabaseContextProps>({
 	signUp: async () => {},
 	signOut: async () => {},
 	hasCompletedOnboarding: false,
-	checkOnboardingStatus: async () => {},
+	checkOnboardingStatus: async () => false,
 });
 
 export const useSupabase = () => useContext(SupabaseContext);
@@ -51,21 +51,24 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
 			if (error) throw error;
 			console.log('onboarding_completed', data?.onboarding_completed);
 			setHasCompletedOnboarding(data?.onboarding_completed ?? false);
+			return data?.onboarding_completed ?? false;
 		} catch (error) {
 			console.error('Error checking onboarding status:', error);
 			setHasCompletedOnboarding(false);
+			return false;
 		}
 	};
 
 	const signUp = async (email: string, password: string) => {
 		const { error } = await supabase.auth.signUp({
 			email,
-			
 			password,
 		});
 		if (error) {
 			throw error;
 		}
+		// Set onboarding status to false for new users
+		setHasCompletedOnboarding(false);
 	};
 
 	const signInWithPassword = async (email: string, password: string) => {
