@@ -146,18 +146,21 @@ export type Database = {
           email: string
           id: string
           name: string | null
+          onboarding_completed: boolean | null
         }
         Insert: {
           created_at?: string
           email: string
           id?: string
           name?: string | null
+          onboarding_completed?: boolean | null
         }
         Update: {
           created_at?: string
           email?: string
           id?: string
           name?: string | null
+          onboarding_completed?: boolean | null
         }
         Relationships: []
       }

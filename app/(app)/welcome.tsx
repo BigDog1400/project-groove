@@ -36,7 +36,7 @@ export default function WelcomeScreen() {
 				</Button>
 				<Button
 					size="default"
-					variant="secondary"
+					variant="neutral"
 					onPress={() => {
 						router.push("/sign-in");
 					}}

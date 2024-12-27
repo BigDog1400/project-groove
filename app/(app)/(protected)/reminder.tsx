@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Switch, Alert } from 'react-native';
-import { Button } from '@/components/ui/button';
 import * as Notifications from 'expo-notifications';
 import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';

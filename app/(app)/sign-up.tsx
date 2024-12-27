@@ -9,6 +9,7 @@ import { Form, FormField, FormInput } from "@/components/ui/form";
 import { Text } from "@/components/ui/text";
 import { H1 } from "@/components/ui/typography";
 import { useSupabase } from "@/context/supabase-provider";
+import { router } from "expo-router";
 
 const formSchema = z
 	.object({
@@ -37,8 +38,6 @@ const formSchema = z
 export default function SignUp() {
 	const { signUp } = useSupabase();
 
-	
-
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
@@ -51,10 +50,13 @@ export default function SignUp() {
 	async function onSubmit(data: z.infer<typeof formSchema>) {
 		try {
 			await signUp(data.email, data.password);
-
 			form.reset();
+
+			// For new users, always redirect to onboarding
+			router.replace('/(app)/(protected)/onboarding');
 		} catch (error: Error | any) {
-			console.log(error.message);
+			console.error('Error signing up:', error);
+			alert('Error signing up. Please try again.');
 		}
 	}
 

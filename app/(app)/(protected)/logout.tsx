@@ -23,7 +23,7 @@ export default function LogoutScreen() {
 				<Button
 					className="w-full"
 					size="default"
-					variant="destructive"
+					variant="default"
 					onPress={handleLogout}
 				>
 					<Text>Yes, Sign Out</Text>
@@ -31,7 +31,7 @@ export default function LogoutScreen() {
 				<Button
 					className="w-full"
 					size="default"
-					variant="outline"
+					variant="default"
 					onPress={() => router.back()}
 				>
 					<Text>Cancel</Text>

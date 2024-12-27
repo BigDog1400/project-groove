@@ -1,38 +1,35 @@
-import { cva, type VariantProps } from "class-variance-authority";
-import * as React from "react";
-import { Pressable } from "react-native";
+import { cn } from '@/lib/utils';
+import { cva, type VariantProps } from 'class-variance-authority';
+import * as React from 'react';
+import { Pressable } from 'react-native';
+import { TextClassContext } from './text';
 
-import { TextClassContext } from "./text";
-
-import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-	"group flex items-center justify-center rounded-md web:ring-offset-background web:transition-colors web:focus-visible:outline-none web:focus-visible:ring-2 web:focus-visible:ring-ring web:focus-visible:ring-offset-2",
+	'inline-flex items-center justify-center whitespace-nowrap rounded-base text-sm font-base ring-offset-white transition-all gap-2 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 web:focus-visible:outline-none web:focus-visible:ring-2 web:focus-visible:ring-black web:focus-visible:ring-offset-2 disabled:opacity-50', 
 	{
-		variants: {
-			variant: {
-				default: "bg-primary web:hover:opacity-90 active:opacity-90",
-				destructive: "bg-destructive web:hover:opacity-90 active:opacity-90",
-				outline:
-					"border border-input bg-background web:hover:bg-accent web:hover:text-accent-foreground active:bg-accent",
-				secondary: "bg-secondary web:hover:opacity-80 active:opacity-80",
-				ghost:
-					"web:hover:bg-accent web:hover:text-accent-foreground active:bg-accent",
-				link: "web:underline-offset-4 web:hover:underline web:focus:underline ",
-			},
-			size: {
-				default: "h-10 px-4 py-2 native:h-12 native:px-5 native:py-3 rounded-2xl",
-				sm: "h-9 rounded-2xl px-3",
-				lg: "h-11 rounded-2xl px-8 native:h-14",
-				icon: "h-10 w-10",
-			},
+	  variants: {
+		variant: {
+		  default:
+			'text-mtext bg-main border-2 border-border shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none',
+		  neutral:
+			'bg-bw text-text border-2 border-border shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none',
+		  reverse:
+			'text-mtext bg-main border-2 border-border hover:translate-x-reverseBoxShadowX hover:translate-y-reverseBoxShadowY hover:shadow-shadow',
 		},
-		defaultVariants: {
-			variant: "default",
-			size: "default",
+		size: {
+		  default: 'h-12 px-4 py-2',
+		  sm: 'h-9 px-3',
+		  lg: 'h-13 px-8',
+		  icon: 'h-10 w-10',
 		},
+	  },
+	  defaultVariants: {
+		variant: 'default',
+		size: 'default',
+	  },
 	},
-);
+  )
 
 const buttonTextVariants = cva(
 	"web:whitespace-nowrap text-sm native:text-base font-medium text-foreground web:transition-colors",
@@ -40,12 +37,8 @@ const buttonTextVariants = cva(
 		variants: {
 			variant: {
 				default: "text-primary-foreground",
-				destructive: "text-destructive-foreground",
-				outline: "group-active:text-accent-foreground",
-				secondary:
-					"text-secondary-foreground group-active:text-secondary-foreground",
-				ghost: "group-active:text-accent-foreground",
-				link: "text-primary group-active:underline",
+				neutral: "text-neutral-foreground",
+				reverse: "text-reverse-foreground",
 			},
 			size: {
 				default: "",
@@ -58,37 +51,32 @@ const buttonTextVariants = cva(
 			variant: "default",
 			size: "default",
 		},
-	},
+  }
 );
 
 type ButtonProps = React.ComponentPropsWithoutRef<typeof Pressable> &
-	VariantProps<typeof buttonVariants>;
+  VariantProps<typeof buttonVariants>;
 
-const Button = React.forwardRef<
-	React.ElementRef<typeof Pressable>,
-	ButtonProps
->(({ className, variant, size, ...props }, ref) => {
-	return (
-		<TextClassContext.Provider
-			value={buttonTextVariants({
-				variant,
-				size,
-				className: "web:pointer-events-none",
-			})}
-		>
-			<Pressable
-				className={cn(
-					props.disabled && "opacity-50 web:pointer-events-none",
-					buttonVariants({ variant, size, className }),
-				)}
-				ref={ref}
-				role="button"
-				{...props}
-			/>
-		</TextClassContext.Provider>
-	);
-});
-Button.displayName = "Button";
+const Button = React.forwardRef<React.ElementRef<typeof Pressable>, ButtonProps>(
+  ({ className, variant, size, ...props }, ref) => {
+    return (
+      <TextClassContext.Provider
+        value={buttonTextVariants({ variant, size, className: 'web:pointer-events-none' })}
+      >
+        <Pressable
+          className={cn(
+            props.disabled && 'opacity-50 web:pointer-events-none',
+            buttonVariants({ variant, size, className })
+          )}
+          ref={ref}
+          role='button'
+          {...props}
+        />
+      </TextClassContext.Provider>
+    );
+  }
+);
+Button.displayName = 'Button';
 
 export { Button, buttonTextVariants, buttonVariants };
 export type { ButtonProps };

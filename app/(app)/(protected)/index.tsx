@@ -1,22 +1,27 @@
 import { router } from "expo-router";
 import { View, SafeAreaView, Alert } from "react-native";
 import { useAuth } from "@/hooks/use-auth";
-import { useTodayExercise, useLogSet } from "@/hooks/use-supabase-query";
+import { useTodayExercise, useLogSet, useProgressMetrics } from "@/hooks/use-supabase-query";
+import { useSocialShare } from "@/hooks/use-social-share";
 
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { H1, H3, Muted } from "@/components/ui/typography";
 import { Fab } from "@/components/ui/fab";
 import { StreakFlame } from "@/components/ui/streak-flame";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { ShareableStreak } from "@/components/ShareableStreak";
 
 const RECOMMENDED_DAILY_SETS = 6;
 
 export default function Home() {
 	const { user } = useAuth();
 	const { data: todayExercises, isLoading } = useTodayExercise(user?.id || "");
+	const { data: metrics } = useProgressMetrics(user?.id || "");
 	const todayExercise = todayExercises?.[0];
 	const logSet = useLogSet();
+	const socialShare = useSocialShare();
+	const shareableRef = useRef(null);
 
 	// If no exercises and not loading, redirect to onboarding
 	useEffect(() => {
@@ -26,10 +31,11 @@ export default function Home() {
 	}, [isLoading, todayExercises]);
 
 	const handleLogSet = async () => {
+		console.debug('handleLogSet called');
 		if (!todayExercise?.user_exercise_id || !todayExercise?.daily_assignment_id) return;
 		
 		try {
-			await logSet.mutateAsync({
+			 logSet.mutate({
 				user_exercise_id: todayExercise.user_exercise_id,
 				reps: todayExercise.target_reps,
 				daily_assignment_id: todayExercise.daily_assignment_id,
@@ -39,6 +45,26 @@ export default function Home() {
 			Alert.alert(
 				'Error',
 				'Failed to log set. Please try again.',
+				[{ text: 'OK' }]
+			);
+		}
+	};
+
+	const handleShare = async () => {
+		if (!user?.id || !metrics) return;
+		console.log('handleShare called', metrics);
+		
+		try {
+			await socialShare.mutateAsync({
+				viewRef: shareableRef,
+				streak: metrics.currentStreak,
+				dailyCompletion: metrics.dailyCompletion,
+			});
+		} catch (error) {
+			console.error('Error sharing:', error);
+			Alert.alert(
+				'Error',
+				'Failed to share your progress. Please try again.',
 				[{ text: 'OK' }]
 			);
 		}
@@ -91,9 +117,9 @@ export default function Home() {
 									<Text className="text-base text-center text-muted-foreground">
 										{getProgressMessage(todayExercise.sets_count)}
 									</Text>
-									<View className="w-full bg-muted h-2 rounded-full mt-4">
+									<View className="w-full h-3 rounded-full mt-4 border-2 border-border">
 										<View 
-											className="bg-primary h-full rounded-full" 
+											className="bg-main h-full rounded-full" 
 											style={{ 
 												width: `${Math.min((todayExercise.sets_count / RECOMMENDED_DAILY_SETS) * 100, 100)}%` 
 											}} 
@@ -101,6 +127,7 @@ export default function Home() {
 									</View>
 								</View>
 								
+								{/* <TallyMarks count={6}/> */}
 								{/* Log Set Button */}
 								<Button 
 									className="w-full h-14" 
@@ -116,6 +143,19 @@ export default function Home() {
 									</Text>
 								</Button>
 
+								{todayExercise.sets_count >= RECOMMENDED_DAILY_SETS && (
+									<Button
+										className="w-full mt-4"
+										variant="neutral"
+										onPress={handleShare}
+										disabled={socialShare.isPending}
+									>
+										<Text>
+											{socialShare.isPending ? 'Sharing...' : 'Share Your Progress! 🎉'}
+										</Text>
+									</Button>
+								)}
+
 								{todayExercise.sets_count > 0 && (
 									<Muted className="text-center mt-4">
 										Last set completed: {new Date().toLocaleTimeString()}
@@ -124,8 +164,8 @@ export default function Home() {
 							</View>
 
 							{/* Methodology Explanation */}
-							<View className="mt-6 p-4 bg-white rounded-lg">
-								<Text className="text-sm text-center">
+							<View className="mt-6 relative w-full border-2 border-border p-4 rounded-xl text-mtext bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+								<Text className="text-md font-base [&_p]:leading-relaxed">
 									💡 Grease the Groove: Practice frequently throughout the day with perfect form, staying fresh and never reaching fatigue.
 								</Text>
 							</View>
@@ -134,6 +174,15 @@ export default function Home() {
 				</View>
 			</View>
 			<Fab onPress={() => router.push("/(app)/(protected)/exercise-selection")} />
+
+			{/* Add ShareableStreak component hidden off-screen */}
+			<View className="absolute -left-[9999px]">
+				<ShareableStreak
+					ref={shareableRef}
+					streak={12}
+					dailyCompletion={metrics?.totalRepsToday ?? 0}
+				/>
+			</View>
 		</SafeAreaView>
 	);
 }
