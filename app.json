@@ -53,16 +53,11 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/notification-icon.png",
-          "color": "#ffffff",
-          "sounds": [
-            "./assets/notification-sound.wav"
-          ]
+          "color": "#ffffff"
         }
       ]
     ],
     "description": "Master your strength with simple, consistent Grease the Groove practice.",
-    "subtitle": "Daily Training",
     "extra": {
       "eas": {
         "projectId": "637b247b-7862-4c2b-bd8f-abb29de54f18"
